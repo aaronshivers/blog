@@ -1,0 +1,94 @@
+<% include partials/top %>
+
+<div id="homeContainer" class="container">
+
+  <h1 class="text-center">View User</h1>
+
+  <div class="table-responsive-md">
+
+    <img class="img-thumbnail rounded mx-auto d-block" src="<%= user.avatar %>">
+
+    <table class="table table-striped table-sm">
+      
+      <thead class="table-dark">
+        
+        <tr>
+          <th></th>
+          <th></th>
+        </tr>
+
+      </thead>
+
+      <tbody>
+
+        <tr>
+          <th>Email</th>
+          <th><%= user.email %></th>
+        </tr>
+
+        <tr>
+          <th>First</th>
+          <th><%= user.firstName %></th>
+        </tr>
+
+        <tr>
+          <th>Last</th>
+          <th><%= user.lastName %></th>
+        </tr>
+
+        <tr>
+          <th>Title</th>
+          <th><%= user.jobTitle %></th>
+        </tr>
+
+        <tr>
+          <th>Description</th>
+          <th><%= user.jobDescriptor %></th>
+        </tr>
+
+        <tr>
+          <th>Area</th>
+          <th><%= user.jobArea %></th>
+        </tr>
+
+        <tr>
+          <th>Type</th>
+          <th><%= user.jobType %></th>
+        </tr>
+
+        <tr>
+          <th>Address</th>
+          <th><%= user.streetAddress %></th>
+        </tr>
+
+        <tr>
+          <th>City</th>
+          <th><%= user.city %></th>
+        </tr>
+
+        <tr>
+          <th>State</th>
+          <th><%= user.state %></th>
+        </tr>
+
+        <tr>
+          <th>Zip</th>
+          <th><%= user.zipCode %></th>
+        </tr>
+
+        <tr>
+          <th>Admin</th>
+          <th><%= user.admin %></th>
+        </tr>
+
+        </tr>
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+</div>
+
+<% include partials/bottom %>

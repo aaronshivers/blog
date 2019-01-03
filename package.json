@@ -1,0 +1,42 @@
+{
+  "name": "blog",
+  "version": "1.0.0",
+  "description": "blog template",
+  "main": "app.js",
+  "scripts": {
+    "test": "mocha tests/test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aaronshivers/blog.git"
+  },
+  "keywords": [
+    "blog",
+    "template"
+  ],
+  "author": "aaron shivers",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/aaronshivers/blog/issues"
+  },
+  "homepage": "https://github.com/aaronshivers/blog#readme",
+  "devDependencies": {
+    "dotenv": "^6.2.0",
+    "expect": "^23.6.0",
+    "mocha": "^5.2.0",
+    "supertest": "^3.3.0"
+  },
+  "dependencies": {
+    "bcrypt": "^3.0.3",
+    "cookie-parser": "^1.4.3",
+    "ejs": "^2.6.1",
+    "express": "^4.16.4",
+    "express-paginate": "^1.0.0",
+    "faker": "^4.1.0",
+    "helmet": "^3.15.0",
+    "jsonwebtoken": "^8.4.0",
+    "method-override": "^3.0.0",
+    "mongoose": "^5.4.2",
+    "validator": "^10.10.0"
+  }
+}
