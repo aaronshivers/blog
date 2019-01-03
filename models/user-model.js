@@ -21,7 +21,7 @@ const userSchema = new Schema({
   },
   firstName: {
     type: String,
-    required: true,
+    required: false,
     unique: true,
     trim: true,
     minlength: 1,
@@ -29,7 +29,7 @@ const userSchema = new Schema({
   },
   lastName: {
     type: String,
-    required: true,
+    required: false,
     unique: true,
     trim: true,
     minlength: 1,
