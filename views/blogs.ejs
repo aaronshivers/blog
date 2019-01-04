@@ -7,20 +7,19 @@
   <a class="btn btn-lg btn-outline-primary btn-block mb-3" href="/blogs/new">New Blog</a>
 
   <% blogs.forEach((blog) => { %>
-  <div class="row mb-3">
-    
+  <div class="card mb-3">
+
     <a href="/blogs/<%= blog._id %>/view">
-      <div class="card">
 
-        <img src="<%= blog.image %>" class="card-img-top">
+      <img src="<%= blog.image %>" class="card-img-top">
+      
+      <div class="card-body">
         
-        <div class="card-body">
-          
-          <h4 class="card-title"><%= blog.title %></h4>
+        <h6><%= blog.creator %></h6>
 
-          <p class="card-text text-dark"><%= blog.body %></p>
+        <h4 class="card-title"><%= blog.title %></h4>
 
-        </div>
+        <p class="card-text text-dark"><%= blog.body %></p>
 
       </div>
 

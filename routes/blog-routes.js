@@ -4,7 +4,7 @@ const paginate = require('express-paginate')
 
 const Blog = require('../models/blog-model')
 
-// Required to prevent getting infinite results
+// Required to prevent getting infinite results during pagination
 router.all('*', (req, res, next) => {
   if (req.query.limit <= 10) req.query.limit = 10
   next()
@@ -28,7 +28,7 @@ router.get('/blogs', async (req, res, next) => {
 
   try {
     const [ results, itemCount ] = await Promise.all([
-      Blog.find({}).limit(req.query.limit).skip(req.skip).lean().exec(),
+      Blog.find({}).sort({ date: -1 }).limit(req.query.limit).skip(req.skip).lean().exec(),
       Blog.count({})
     ])
 
@@ -43,6 +43,14 @@ router.get('/blogs', async (req, res, next) => {
   } catch (err) {
     next(err)
   }
+})
+
+router.get('/blogs/:id/view', (req, res) => {
+  const { id } = req.params
+
+  Blog.findById(id).then((blog) => {
+    res.render('view-blog', { blog })
+  })
 })
 
 module.exports = router

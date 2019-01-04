@@ -1,0 +1,25 @@
+<% include partials/top %>
+
+<div id="homeContainer" class="container">
+
+  <h1 class="text-center">View Blog</h1>
+
+    <div class="card border-0">
+      
+      <img class="card-img-top" src="<%= blog.image %>">
+
+      <div class="card-body">
+        
+        <h5 class="card-title"><%= blog.title %></h5>
+
+        <h6 class="text-dark font-weight-normal"><%= blog.body %></h6>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<% include partials/bottom %>

@@ -58,6 +58,6 @@ const populateDatabase = () => {
   })
 }
 
-populateDatabase()
+// populateDatabase()
 
 module.exports = populateDatabase
