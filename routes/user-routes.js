@@ -7,7 +7,6 @@ const validatePassword = require('../middleware/validate-password')
 const createToken = require('../middleware/create-token')
 const authenticateUser = require('../middleware/authenticate-user')
 const authenticateAdmin = require('../middleware/authenticate-admin')
-const populateDatabase = require('../middleware/populate-database')
 
 const cookieExpiration = { expires: new Date(Date.now() + 86400000) }
 
@@ -64,7 +63,7 @@ router.get('/users', async (req, res, next) => {
   try {
     const [ results, itemCount ] = await Promise.all([
       User.find({}).limit(req.query.limit).skip(req.skip).lean().exec(),
-      User.count({})
+      User.countDocuments({})
     ])
 
     const pageCount = Math.ceil(itemCount / req.query.limit)
@@ -100,7 +99,7 @@ router.get('/users/results', async (req, res, next) => {
   try {
     const [ results, itemCount ] = await Promise.all([
       User.find( { $text: { $search: query } } ).limit(req.query.limit).skip(req.skip).lean().exec(),
-      User.count( { $text: { $search: query } } )
+      User.countDocuments( { $text: { $search: query } } )
     ])
 
     if (results < 1) return res.status(404).render('error', {
@@ -155,12 +154,6 @@ router.post('/login', (req, res) => {
 // GET /logout
 router.get('/logout', (req, res) => {
   res.clearCookie('token').redirect(`/`)
-})
-
-router.get('/users/populate', (req, res) => {
-  populateDatabase()
-
-  setTimeout(() => res.redirect('/users'), 10000)
 })
 
 module.exports = router

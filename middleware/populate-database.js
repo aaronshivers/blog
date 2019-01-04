@@ -4,9 +4,8 @@ const app = require('../app.js')
 const User = require('../models/user-model')
 const Blog = require('../models/blog-model')
 
-const populateDatabase = () => {
+const populateUsers = () => {
   const userQty = 100
-  const blogQty = 100
 
   User.deleteMany().then(() => {
 
@@ -36,11 +35,13 @@ const populateDatabase = () => {
       user.save()
     }
   }).catch(err => console.log(err))
+}
 
+const populateBlogs = () => {
   Blog.deleteMany().then(() => {
 
     User.find().then((users) => {
-
+      const blogQty = 100
       const max = users.length
       const num = Math.floor(Math.random() * Math.floor(max))
 
@@ -58,6 +59,7 @@ const populateDatabase = () => {
   })
 }
 
-// populateDatabase()
-
-module.exports = populateDatabase
+module.exports = {
+  populateUsers,
+  populateBlogs
+}

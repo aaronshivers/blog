@@ -15,7 +15,7 @@ router.get('/blogs/new', authenticateUser, (req, res) => {
   res.render('new-blog')
 })
 
-router.post('/blogs', authenticateUser, (req, res) => {
+router.post('/blogs', (req, res) => {
   const { title, body, image } = req.body
   const newBlog = { title, body, image }
   const blog = new Blog(newBlog)
@@ -30,7 +30,7 @@ router.get('/blogs', async (req, res, next) => {
   try {
     const [ results, itemCount ] = await Promise.all([
       Blog.find({}).sort({ date: -1 }).limit(req.query.limit).skip(req.skip).lean().exec(),
-      Blog.count({})
+      Blog.countDocuments({})
     ])
 
     const pageCount = Math.ceil(itemCount / req.query.limit)

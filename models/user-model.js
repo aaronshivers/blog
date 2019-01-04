@@ -22,7 +22,6 @@ const userSchema = new Schema({
   firstName: {
     type: String,
     required: false,
-    unique: true,
     trim: true,
     minlength: 1,
     maxlength: 100
@@ -30,7 +29,6 @@ const userSchema = new Schema({
   lastName: {
     type: String,
     required: false,
-    unique: true,
     trim: true,
     minlength: 1,
     maxlength: 100

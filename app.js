@@ -7,6 +7,8 @@ const methodOverride = require('method-override')
 const cookieParser = require('cookie-parser')
 const paginate = require('express-paginate')
 
+const { populateUsers, populateBlogs } = require('./middleware/populate-database')
+
 const app = express()
 const { PORT } = process.env
 
@@ -25,7 +27,15 @@ app.use(methodOverride('_method'))
 app.use(userRoutes)
 app.use(blogRoutes)
 
-app.get('/', (req, res) => res.render('home'))
+app.get('/', (req, res) => res.redirect('/blogs'))
+
+app.get('/populate', (req, res) => {
+  populateUsers()
+  
+  setTimeout(() => populateBlogs(), 5000)
+
+  setTimeout(() => res.redirect('/'), 10000)
+})
 
 app.use((req, res, next) => {
   res.status(404).render('error', {
