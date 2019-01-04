@@ -54,4 +54,27 @@ router.get('/blogs/:id/view', (req, res) => {
   })
 })
 
+// GET /blogs/search
+router.get('/blogs/search', async (req, res, next) => {
+  const { find } = req.query
+
+  try {
+    const [ results, itemCount ] = await Promise.all([
+      Blog.find( { $text: { $search: find } } ).limit(req.query.limit).skip(req.skip).lean().exec(),
+      Blog.countDocuments( { $text: { $search: find } } )
+    ])
+
+    const pageCount = Math.ceil(itemCount / req.query.limit)
+
+    res.render('blogs', {
+      blogs: results,
+      pageCount,
+      itemCount,
+      pages: paginate.getArrayPages(req)(4, pageCount, req.query.page)
+    })
+  } catch (err) {
+    next(err)
+  }
+})
+
 module.exports = router
