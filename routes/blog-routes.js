@@ -3,6 +3,7 @@ const router = express.Router()
 const paginate = require('express-paginate')
 
 const Blog = require('../models/blog-model')
+const authenticateUser = require('../middleware/authenticate-user')
 
 // Required to prevent getting infinite results during pagination
 router.all('*', (req, res, next) => {
@@ -10,11 +11,11 @@ router.all('*', (req, res, next) => {
   next()
 })
 
-router.get('/blogs/new', (req, res) => {
+router.get('/blogs/new', authenticateUser, (req, res) => {
   res.render('new-blog')
 })
 
-router.post('/blogs', (req, res) => {
+router.post('/blogs', authenticateUser, (req, res) => {
   const { title, body, image } = req.body
   const newBlog = { title, body, image }
   const blog = new Blog(newBlog)
