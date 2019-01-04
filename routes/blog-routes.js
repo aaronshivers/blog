@@ -49,7 +49,7 @@ router.get('/blogs', async (req, res, next) => {
 router.get('/blogs/:id/view', (req, res) => {
   const { id } = req.params
 
-  Blog.findById(id).then((blog) => {
+  Blog.findById(id).populate('creator').then((blog) => {
     res.render('view-blog', { blog })
   })
 })
@@ -60,7 +60,7 @@ router.get('/blogs/search', async (req, res, next) => {
 
   try {
     const [ results, itemCount ] = await Promise.all([
-      Blog.find( { $text: { $search: find } } ).limit(req.query.limit).skip(req.skip).lean().exec(),
+      Blog.find( { $text: { $search: find } } ).populate('creator').limit(req.query.limit).skip(req.skip).lean().exec(),
       Blog.countDocuments( { $text: { $search: find } } )
     ])
 
