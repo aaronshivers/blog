@@ -29,8 +29,8 @@ router.get('/blogs', async (req, res, next) => {
 
   try {
     const [ results, itemCount ] = await Promise.all([
-      Blog.find({}).sort({ date: -1 }).limit(req.query.limit).skip(req.skip).lean().exec(),
-      Blog.countDocuments({})
+      Blog.find().populate('creator').sort({ date: -1 }).limit(req.query.limit).skip(req.skip).lean().exec(),
+      Blog.countDocuments()
     ])
 
     const pageCount = Math.ceil(itemCount / req.query.limit)

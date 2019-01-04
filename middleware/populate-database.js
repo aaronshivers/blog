@@ -43,9 +43,9 @@ const populateBlogs = () => {
     User.find().then((users) => {
       const blogQty = 100
       const max = users.length
-      const num = Math.floor(Math.random() * Math.floor(max))
 
       for (let i = 0; i < blogQty; i++) {
+        const num = Math.floor(Math.random() * Math.floor(max))
         const title = faker.company.catchPhrase()
         const body = faker.hacker.phrase()
         const image = faker.image.image()

@@ -4,8 +4,6 @@
 
   <h1 class="text-center">Blogs List</h1>
 
-  <a class="btn btn-lg btn-outline-primary btn-block mb-3" href="/blogs/new">New Blog</a>
-
   <% blogs.forEach((blog) => { %>
   <div class="card mb-3">
 
@@ -15,7 +13,7 @@
       
       <div class="card-body">
         
-        <h6><%= blog.creator %></h6>
+        <h6><%= blog.creator.firstName %> <%= blog.creator.lastName %></h6>
 
         <h4 class="card-title"><%= blog.title %></h4>
 
