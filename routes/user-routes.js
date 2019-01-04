@@ -160,7 +160,7 @@ router.get('/logout', (req, res) => {
 router.get('/users/populate', (req, res) => {
   populateDatabase()
 
-  setTimeout(() => res.redirect('/users'), 5000)
+  setTimeout(() => res.redirect('/users'), 10000)
 })
 
 module.exports = router

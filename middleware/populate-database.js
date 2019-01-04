@@ -2,9 +2,11 @@ const faker = require('faker')
 const app = require('../app.js')
 
 const User = require('../models/user-model')
+const Blog = require('../models/blog-model')
 
 const populateDatabase = () => {
-  const userQty = 1000
+  const userQty = 10
+  const blogQty = 100
 
   User.deleteMany().then(() => {
 
@@ -33,7 +35,29 @@ const populateDatabase = () => {
       
       user.save()
     }
+  }).catch(err => console.log(err))
+
+  Blog.deleteMany().then(() => {
+
+    User.find().then((users) => {
+
+      const max = users.length
+      const num = Math.floor(Math.random() * Math.floor(max))
+
+      for (let i = 0; i < blogQty; i++) {
+        const title = faker.company.catchPhrase()
+        const body = faker.hacker.phrase()
+        const image = faker.image.image()
+        const creator = users[num]._id
+        const newBlog = { title, body, image, creator }
+        const blog = new Blog(newBlog)
+
+        blog.save()
+      }
+    }).catch(err => console.log(err))
   })
 }
+
+populateDatabase()
 
 module.exports = populateDatabase
