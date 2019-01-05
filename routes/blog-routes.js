@@ -1,6 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const paginate = require('express-paginate')
+const jwt = require('jsonwebtoken')
 
 const Blog = require('../models/blog-model')
 const authenticateUser = require('../middleware/authenticate-user')
@@ -17,7 +18,11 @@ router.get('/blogs/new', authenticateUser, (req, res) => {
 
 router.post('/blogs', (req, res) => {
   const { title, body, image } = req.body
-  const newBlog = { title, body, image }
+  const token = req.cookies.token
+  const secret = process.env.JWT_SECRET
+  const decoded = jwt.verify(token, secret)
+  const creator = decoded._id
+  const newBlog = { title, body, image, creator }
   const blog = new Blog(newBlog)
 
   blog.save().then(() => {
@@ -75,6 +80,15 @@ router.get('/blogs/search', async (req, res, next) => {
   } catch (err) {
     next(err)
   }
+})
+
+// GET /blogs/:id/user
+router.get('/blogs/:id/user', async (req, res, next) => {
+  const creator = req.params.id
+
+  Blog.find({ creator }).then((blogs) => {
+    res.render('blog-list', { blogs })
+  })
 })
 
 module.exports = router

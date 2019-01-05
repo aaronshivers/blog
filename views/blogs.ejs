@@ -12,8 +12,12 @@
       <img src="<%= blog.image %>" class="card-img-top">
       
       <div class="card-body">
-        
+
+        <% if (blog.creator) { %>
+
         <h6><%= blog.creator.firstName %> <%= blog.creator.lastName %></h6>
+
+        <% } %>
 
         <h4 class="card-title"><%= blog.title %></h4>
 

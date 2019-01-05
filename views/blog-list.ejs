@@ -1,0 +1,22 @@
+<% include partials/top %>
+
+<div id="homeContainer" class="container">
+
+  <h1 class="text-center">My Blogs List</h1>
+
+  <ul class="list-group">
+    
+    <% blogs.forEach((blog) => { %>
+    <li class="list-group-item">
+      
+      <strong><%= blog.title %></strong>
+      <%= blog.body %>
+
+    </li>
+    <% }) %>
+
+  </ul>
+
+</div>
+
+<% include partials/bottom %>

@@ -1,6 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const paginate = require('express-paginate')
+const jwt = require('jsonwebtoken')
 
 const User = require('../models/user-model')
 const validatePassword = require('../middleware/validate-password')
@@ -31,7 +32,7 @@ router.post('/users', (req, res) => {
   if (validatePassword(newUser.password)) {
     user.save().then((user) => {
       createToken(user).then((token) => {
-        res.cookie('token', token, cookieExpiration).status(201).render(`profile`, { user })
+        res.cookie('token', token, cookieExpiration).status(201).redirect(`/profile`)
       }).catch(err => res.status(500).send(err.message))
     }).catch(err => res.status(400).send(err.message))
   } else {

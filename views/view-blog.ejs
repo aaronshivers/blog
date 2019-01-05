@@ -10,7 +10,11 @@
 
       <div class="card-body">
 
+        <% if (blog.creator) { %>
+
         <h6><%= blog.creator.firstName %> <%= blog.creator.lastName %></h6>
+
+        <% } %>
         
         <h5 class="card-title"><%= blog.title %></h5>
 
