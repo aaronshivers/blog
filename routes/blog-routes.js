@@ -55,7 +55,12 @@ router.get('/blogs/:id/view', (req, res) => {
   const { id } = req.params
 
   Blog.findById(id).populate('creator').then((blog) => {
-    res.render('view-blog', { blog })
+    if (blog) return res.render('view-blog', { blog })
+  
+    res.status(404).render('error', {
+      statusCode: '404',
+      errorMessage: `Sorry, we can't find a blog with that Id in our database.`
+    })
   })
 })
 
