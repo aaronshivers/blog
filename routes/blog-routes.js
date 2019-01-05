@@ -82,12 +82,32 @@ router.get('/blogs/search', async (req, res, next) => {
   }
 })
 
-// GET /blogs/:id/user
+// GET /blogs/:creator/user
 router.get('/blogs/:creator/user', async (req, res, next) => {
   const { creator } = req.params
 
-  Blog.find({ creator }).then((blogs) => {
+  Blog.find({ creator }).sort({ date: -1 }).then((blogs) => {
     res.render('blog-list', { blogs })
+  })
+})
+
+// GET /blogs/:id/edit
+router.get('/blogs/:id/edit', (req, res) => {
+  const { id } = req.params
+
+  Blog.findById(id).then((blog) => {
+    res.render('edit-blog', { blog })
+  })
+})
+
+// PATCH /blogs/:id
+router.patch('/blogs/:id', (req, res) => {
+  const { id } = req.params
+  const { title, body, image } = req.body
+  const updatedBlog = { title, body, image }
+
+  Blog.findByIdAndUpdate(id, updatedBlog).then(() => {
+    res.redirect('/blogs')
   })
 })
 

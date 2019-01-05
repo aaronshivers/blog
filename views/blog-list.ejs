@@ -7,12 +7,12 @@
   <ul class="list-group">
     
     <% blogs.forEach((blog) => { %>
-    <li class="list-group-item">
+    <a href="/blogs/<%= blog._id %>/edit" class="list-group-item list-group-item-action">
       
       <strong><%= blog.title %></strong>
       <%= blog.body %>
 
-    </li>
+    </a>
     <% }) %>
 
   </ul>
