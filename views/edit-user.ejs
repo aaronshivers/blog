@@ -1,0 +1,47 @@
+<% include partials/top %>
+
+<div class="container">
+
+  <h1 class="text-center">Edit User</h1>
+
+  <form class="form" action="/users/<%= user._id %>?_method=PATCH" method="POST">
+    
+    <div class="form-group">
+      <label for="email">Email</label>
+      <input class="form-control" type="email" name="email" value="<%= user.email %>" placeholder="Enter Email..." "autocomplete="email" required>
+    </div>
+
+    <div class="form-group">
+      <label for="password">Pasword</label>
+      <input class="form-control" type="password" name="password" placeholder="Enter Password..." autocomplete="current-password" required>
+      <small class="form-text text-muted">Password must contain 8-100 characters, with at least one lowercase letter, one uppercase letter, one number, and one special character.</small>
+    </div>
+
+    <div class="form-group">
+      <label for="firstName">First Name</label>
+      <input class="form-control" type="text" name="firstName" value="<%= user.firstName %>" placeholder="Enter First Name..." autocomplete="cc-given-name">
+    </div>
+
+    <div class="form-group">
+      <label for="lastName">Last Name</label>
+      <input class="form-control" type="text" name="lastName" value="<%= user.lastName %>" placeholder="Enter Last Name..." autocomplete="cc-family-name">
+    </div>
+
+    <div class="form-group">
+      <label for="jobTitle">Job Title</label>
+      <input class="form-control" type="text" name="jobTitle" value="<%= user.jobTitle %>" placeholder="Enter Job Title..." autocomplete="organization-title">
+    </div>
+
+    <div class="form-group">
+      <label for="avatar">Avatar</label>
+      <input class="form-control" type="text" name="avatar" value="<%= user.avatar %>" placeholder="Enter Avatar Link..." "autocomplete="photo">
+    </div>
+
+
+    <button class="btn btn-lg btn-outline-primary btn-block">Update User</button>
+
+  </form>
+
+</div>
+
+<% include partials/bottom %>

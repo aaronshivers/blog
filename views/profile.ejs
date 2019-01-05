@@ -4,13 +4,16 @@
 
   <h1 class="text-center">Profile Page</h1>
 
-  <table class="table">
+  <img class="w-25 rounded-circle mx-auto d-block" src="<%= user.avatar %>">
+
+  <table class="table mt-3">
     
     <thead class="table-primary">
       
       <tr>
         
-        <th>Email</th>
+        <th></th>
+        <th></th>
 
       </tr>
 
@@ -20,7 +23,30 @@
       
       <tr>
         
+        <th>Email</th>
         <th><%= user.email %></th>
+
+      </tr>
+
+        <tr>
+          <th>First</th>
+          <th><%= user.firstName %></th>
+        </tr>
+
+        <tr>
+          <th>Last</th>
+          <th><%= user.lastName %></th>
+        </tr>
+
+        <tr>
+          <th>Title</th>
+          <th><%= user.jobTitle %></th>
+        </tr>
+
+      <tr>
+        
+        <th>Avatar</th>
+        <th><%= user.avatar %></th>
 
       </tr>
 

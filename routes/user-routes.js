@@ -63,7 +63,7 @@ router.get('/users', async (req, res, next) => {
   
   try {
     const [ results, itemCount ] = await Promise.all([
-      User.find({}).sort({ email: 1 }).limit(req.query.limit).skip(req.skip).lean().exec(),
+      User.find({}).sort({ signupDate: -1 }).limit(req.query.limit).skip(req.skip).lean().exec(),
       User.countDocuments({})
     ])
 
@@ -155,6 +155,34 @@ router.post('/login', (req, res) => {
 // GET /logout
 router.get('/logout', (req, res) => {
   res.clearCookie('token').redirect(`/`)
+})
+
+// GET /users/:id/edit
+router.get('/users/:id/edit', (req, res) => {
+  const { id } = req.params
+
+  User.findById(id).then((user) => {
+    res.render('edit-user', { user })
+  })
+})
+
+// PATCH /users/:id
+router.patch('/users/:id', (req, res) => {
+  const { id } = req.params
+  const { email, password, firstName, lastName, jobTitle, avatar } = req.body
+  const updatedUser = { email, password, firstName, lastName, jobTitle, avatar }
+
+  User.findOne({ email }).then((user) => {
+
+    if (user && user.email !== email) return res.status(409).render('error', {
+      statusCode: '409',
+      errorMessage: 'Sorry, that email already exists in our database.'
+    })
+
+    User.findByIdAndUpdate(id, updatedUser).then(() => {
+      res.redirect('/profile')
+    })
+  })
 })
 
 module.exports = router

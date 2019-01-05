@@ -45,8 +45,13 @@ const userSchema = new Schema({
     required: false,
     default: false
   },
-  avatar: { type: String },
-  jobTitle: { type: String },
+  avatar: {
+    type: String,
+    default: '/doughnut.jpg'
+  },
+  jobTitle: {
+    type: String
+  },
   signupDate: {
     type: Date,
     default: Date.now()

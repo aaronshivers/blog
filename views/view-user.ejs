@@ -4,9 +4,9 @@
 
   <h1 class="text-center">View User</h1>
 
-  <div class="table-responsive-md">
+  <img class="w-25 rounded-circle mx-auto d-block" src="<%= user.avatar %>">
 
-    <img class="img-thumbnail rounded mx-auto d-block" src="<%= user.avatar %>">
+  <div class="table-responsive-md mt-3">
 
     <table class="table table-striped table-sm">
       
@@ -77,6 +77,11 @@
         </tr>
 
         <tr>
+          <th>Avatar</th>
+          <th><%= user.avatar %></th>
+        </tr>
+
+        <tr>
           <th>Admin</th>
           <th><%= user.admin %></th>
         </tr>
@@ -88,6 +93,8 @@
     </table>
 
   </div>
+
+  <a class="btn btn-outline-primary btn-block btn-lg" href="/users/<%= user._id %>/edit">Edit User</a>
 
 </div>
 
