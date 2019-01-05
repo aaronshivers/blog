@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router()
 const paginate = require('express-paginate')
 const jwt = require('jsonwebtoken')
+const bcrypt = require('bcrypt')
 
 const User = require('../models/user-model')
 const validatePassword = require('../middleware/validate-password')
@@ -10,6 +11,7 @@ const authenticateUser = require('../middleware/authenticate-user')
 const authenticateAdmin = require('../middleware/authenticate-admin')
 
 const cookieExpiration = { expires: new Date(Date.now() + 86400000) }
+const saltRounds = 10
 
 // Required to prevent getting infinite results
 router.all('*', (req, res, next) => {
@@ -170,18 +172,26 @@ router.get('/users/:id/edit', (req, res) => {
 router.patch('/users/:id', (req, res) => {
   const { id } = req.params
   const { email, password, firstName, lastName, jobTitle, avatar } = req.body
-  const updatedUser = { email, password, firstName, lastName, jobTitle, avatar }
 
   User.findOne({ email }).then((user) => {
 
-    if (user && user.email !== email) return res.status(409).render('error', {
-      statusCode: '409',
-      errorMessage: 'Sorry, that email already exists in our database.'
-    })
+    if (!validatePassword(password)) return res.status(400).send('Password must contain 8-100 characters, with at least one lowercase letter, one uppercase letter, one number, and one special character.')
 
-    User.findByIdAndUpdate(id, updatedUser).then(() => {
-      res.redirect('/profile')
-    })
+    bcrypt.hash(password, saltRounds).then((hash) => {
+      const updatedUser = { email, password: hash, firstName, lastName, jobTitle, avatar }
+
+      User.findByIdAndUpdate(id, updatedUser).then((user) => {
+        if (user) return res.redirect('/profile')
+
+        res.status(404).render('error', {
+          statusCode: '404',
+          errorMessage: 'Sorry, that user Id was not found in our database.'
+        })
+      }).catch(err => res.status(409).render('error', {
+        statusCode: '409',
+        errorMessage: `Sorry, that email already exists in our database.`
+      }))
+    }).catch(err => res.status(400).send(err.message))
   })
 })
 
