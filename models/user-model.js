@@ -46,7 +46,11 @@ const userSchema = new Schema({
     default: false
   },
   avatar: { type: String },
-  jobTitle: { type: String }
+  jobTitle: { type: String },
+  signupDate: {
+    type: Date,
+    default: Date.now()
+  }
 })
 
 hashPassword(userSchema)

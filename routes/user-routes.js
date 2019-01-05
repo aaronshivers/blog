@@ -63,7 +63,7 @@ router.get('/users', async (req, res, next) => {
   
   try {
     const [ results, itemCount ] = await Promise.all([
-      User.find({}).limit(req.query.limit).skip(req.skip).lean().exec(),
+      User.find({}).sort({ email: 1 }).limit(req.query.limit).skip(req.skip).lean().exec(),
       User.countDocuments({})
     ])
 
