@@ -83,8 +83,8 @@ router.get('/blogs/search', async (req, res, next) => {
 })
 
 // GET /blogs/:id/user
-router.get('/blogs/:id/user', async (req, res, next) => {
-  const creator = req.params.id
+router.get('/blogs/:creator/user', async (req, res, next) => {
+  const { creator } = req.params
 
   Blog.find({ creator }).then((blogs) => {
     res.render('blog-list', { blogs })
