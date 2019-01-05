@@ -26,7 +26,7 @@ describe('GET /', () => {
   })
 })
 
-// GET /
+// GET /blogs
 describe('GET /blogs', () => {
   it('should respond 200, and GET /blogs', (done) => {
     request(app)
@@ -36,7 +36,7 @@ describe('GET /blogs', () => {
   })
 })
 
-// GET /
+// GET /blogs/:id/view
 describe('GET /blogs/:id/view', () => {
   
   it('should respond with 200, if specified blog exists', (done) => {
@@ -52,6 +52,14 @@ describe('GET /blogs/:id/view', () => {
     request(app)
       .get(`/blogs/${ _id }/view`)
       .expect(404)
+      .end(done)
+  })
+
+  it('should respond with 400, if ObjectId is invalid', (done) => {
+    const { _id } = `invalidObjectId`
+    request(app)
+      .get(`/blogs/${ _id }/view`)
+      .expect(400)
       .end(done)
   })
 })

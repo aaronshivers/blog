@@ -61,7 +61,10 @@ router.get('/blogs/:id/view', (req, res) => {
       statusCode: '404',
       errorMessage: `Sorry, we can't find a blog with that Id in our database.`
     })
-  })
+  }).catch(err => res.status(400).render('error', {
+      statusCode: '400',
+      errorMessage: `Sorry, That seems to be an invalid ObjectId.`
+    }))
 })
 
 // GET /blogs/search
