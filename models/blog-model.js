@@ -6,8 +6,7 @@ const blogSchema = new Schema({
   title: {
     type: String,
     required: true,
-    unique: false,
-    lowercase: true,
+    unique: true,
     trim: true,
     minlength: 1,
     maxlength: 50
@@ -15,7 +14,6 @@ const blogSchema = new Schema({
   body: {
     type: String,
     required: true,
-    unique: false,
     trim: true,
     minlength: 1,
     maxlength: 500
@@ -23,7 +21,6 @@ const blogSchema = new Schema({
   image: {
     type: String,
     required: true,
-    unique: false,
     trim: true,
     minlength: 1,
     maxlength: 50

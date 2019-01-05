@@ -3,6 +3,7 @@ const { ObjectId } = require('mongodb')
 
 const User = require(`../models/user-model`)
 const Blog = require(`../models/blog-model`)
+const createToken = require('../middleware/create-token')
 
 const users = [{
   _id: new ObjectId(),
@@ -34,6 +35,12 @@ const blogs = [{
   body: faker.hacker.phrase(),
   image: faker.image.image(),
   creator: users[1]._id
+}, {
+  _id: new ObjectId(),
+  title: faker.company.catchPhrase(),
+  body: faker.hacker.phrase(),
+  image: faker.image.image(),
+  creator: users[0]._id
 }]
 
 const populateUsers = (done) => {
@@ -54,9 +61,18 @@ const populateBlogs = (done) => {
   }).then(() => done())
 }
 
+const tokens = []
+  
+users.forEach((user) => {
+  createToken(user).then((token) => {
+    tokens.push(token)
+  })
+})
+
 module.exports = {
   populateUsers,
   populateBlogs,
   users,
-  blogs
+  blogs,
+  tokens
 }

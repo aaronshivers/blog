@@ -16,7 +16,7 @@ router.get('/blogs/new', authenticateUser, (req, res) => {
   res.render('new-blog')
 })
 
-router.post('/blogs', (req, res) => {
+router.post('/blogs', authenticateUser, (req, res) => {
   const { title, body, image } = req.body
   const token = req.cookies.token
   const secret = process.env.JWT_SECRET
@@ -25,9 +25,13 @@ router.post('/blogs', (req, res) => {
   const newBlog = { title, body, image, creator }
   const blog = new Blog(newBlog)
 
-  blog.save().then(() => {
-    res.redirect('/blogs')
-  })
+  blog.save().then((err, blog) => {
+    // if (err) return res.send(err.message)
+    res.status(302).redirect('/blogs')
+  }).catch(err => res.status(400).render('error', {
+      statusCode: '400',
+      errorMessage: err.message
+    }))
 })
 
 router.get('/blogs', async (req, res, next) => {
