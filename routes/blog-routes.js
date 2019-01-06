@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken')
 
 const Blog = require('../models/blog-model')
 const authenticateUser = require('../middleware/authenticate-user')
+const verifyCreator = require('../middleware/verify-creator')
 
 // Required to prevent getting infinite results during pagination
 router.all('*', (req, res, next) => {
@@ -104,11 +105,18 @@ router.get('/blogs/:creator/user', async (req, res, next) => {
 })
 
 // GET /blogs/:id/edit
-router.get('/blogs/:id/edit', (req, res) => {
-  const { id } = req.params
+router.get('/blogs/:id/edit', authenticateUser, (req, res) => {
+  const { token } = req.cookies
+  const _id = req.params.id
 
-  Blog.findById(id).then((blog) => {
-    res.render('edit-blog', { blog })
+  verifyCreator(token).then((creator) => {
+    Blog.findOne({ _id, creator }).then((blog) => {
+      if (!blog) return res.status(401).render('error', {
+        statusCode: '401',
+        errorMessage: `Sorry, it doesn't look like you created that blog.`
+      })
+      res.render('edit-blog', { blog })
+    })
   })
 })
 

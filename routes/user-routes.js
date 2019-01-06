@@ -13,7 +13,7 @@ const authenticateAdmin = require('../middleware/authenticate-admin')
 const cookieExpiration = { expires: new Date(Date.now() + 86400000) }
 const saltRounds = 10
 
-// Required to prevent getting infinite results
+// Required to prevent getting infinite results during pagination
 router.all('*', (req, res, next) => {
   if (req.query.limit <= 10) req.query.limit = 10
   next()

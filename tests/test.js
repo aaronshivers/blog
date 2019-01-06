@@ -28,10 +28,34 @@ describe('GET /', () => {
   })
 })
 
+// GET /blogs/new
+describe('GET /blogs/new', () => {
+
+  it('should respond 200, and GET /blogs, if user is logged in.', (done) => {
+    const cookie = `token=${tokens[0]}`
+
+    request(app)
+      .get('/blogs/new')
+      .set('Cookie', cookie)
+      .expect(200)
+      .end(done)
+  })
+
+  it('should respond 401, if user is NOT logged in.', (done) => {
+    // const cookie = `token=${tokens[0]}`
+
+    request(app)
+      .get('/blogs/new')
+      // .set('Cookie', cookie)
+      .expect(401)
+      .end(done)
+  })
+})
+
 // POST /blogs
 describe('POST /blogs', () => {
 
-  it('should respond 302, redirect to /blogs, and create a new blog', (done) => {
+  it('should respond 302, redirect to /blogs, and create a new blog if user is logged in', (done) => {
     const cookie = `token=${tokens[0]}`
     const { title, body, image, creator } = blogs[2]
     
@@ -106,7 +130,6 @@ describe('POST /blogs', () => {
   })
 })
 
-
 // GET /blogs
 describe('GET /blogs', () => {
   it('should respond 200, and GET /blogs', (done) => {
@@ -144,3 +167,39 @@ describe('GET /blogs/:id/view', () => {
       .end(done)
   })
 })
+
+// GET /blogs/:id/edit
+describe('GET /blogs/:id/edit', () => {
+
+  it('should respond 200, and GET /blogs/:id/edit, if user is logged in, and is the creator.', (done) => {
+    const cookie = `token=${tokens[0]}`
+    const { _id } = blogs[0]._id
+
+    request(app)
+      .get(`/blogs/${ _id }/edit`)
+      .set('Cookie', cookie)
+      .expect(200)
+      .end(done)
+  })
+
+  it('should respond 401, if user is NOT logged in.', (done) => {
+    const { _id } = blogs[0]._id
+
+    request(app)
+      .get(`/blogs/${ _id }/edit`)
+      .expect(401)
+      .end(done)
+  })
+
+  it('should respond 401, if user is logged in, but NOT the creator.', (done) => {
+    const cookie = `token=${tokens[1]}`
+    const { _id } = blogs[0]._id
+
+    request(app)
+      .get(`/blogs/${ _id }/edit`)
+      .set('Cookie', cookie)
+      .expect(401)
+      .end(done)
+  })
+})
+
