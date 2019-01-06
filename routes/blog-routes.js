@@ -100,15 +100,15 @@ router.get('/blogs/:creator/list', authenticateUser, async (req, res, next) => {
   const { creator } = req.params
   const decoded = jwt.verify(token, process.env.JWT_SECRET)
 
-  verifyCreator(token).then((creatorId) => {
+  verifyCreator(token).then((creator) => {
 
-    if (creatorId !== decoded._id) {
+    if (creator !== decoded._id) {
       return res.status(401).render('error', {
         statusCode: '401',
         errorMessage: `Sorry, it doesn't look like you are the creator of those blogs.`
       })
     } else {
-      Blog.find({ creatorId }).sort({ date: -1 }).then((blogs) => {
+      Blog.find({ creator }).sort({ date: -1 }).then((blogs) => {
         res.render('blog-list', { blogs })
       })
     }
@@ -132,14 +132,18 @@ router.get('/blogs/:id/edit', authenticateUser, (req, res) => {
 })
 
 // PATCH /blogs/:id
-router.patch('/blogs/:id', (req, res) => {
+router.patch('/blogs/:id', authenticateUser, (req, res) => {
   const { id } = req.params
   const { title, body, image } = req.body
   const updatedBlog = { title, body, image }
+  const options = { runValidators: true }
 
-  Blog.findByIdAndUpdate(id, updatedBlog).then(() => {
-    res.redirect('/blogs')
-  })
+  Blog.findByIdAndUpdate(id, updatedBlog, options).then((blog) => {
+    res.status(302).redirect('/blogs')
+  }).catch(err => res.status(400).render('error', {
+      statusCode: '400',
+      errorMessage: err.message
+    }))
 })
 
 module.exports = router

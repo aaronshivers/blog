@@ -239,7 +239,151 @@ describe('GET /blogs/:id/edit', () => {
   })
 })
 
+// PATCH /blogs
+describe('PATCH /blogs/:id', () => {
 
+  it('should respond 302, redirect to /blogs, and update the specified blog, if user is logged in', (done) => {
+    const { _id } = blogs[0]
+    const cookie = `token=${tokens[0]}`
+    const { title, body, image, creator } = blogs[3]
+    
+    request(app)
+      .patch(`/blogs/${ _id }`)
+      .set('Cookie', cookie)
+      .type('form')
+      .send(`title=${ title }`)
+      .send(`body=${ body }`)
+      .send(`image=${ image }`)
+      .send(`creator=${ creator }`)
+      .expect(302)
+      .expect((res) => {
+        expect(res.header.location).toEqual('/blogs')
+      })
+      .end((err, res) => {
+        if (err) return done(err)
+
+        Blog.findById({ _id }).then((blog) => {
+          expect(blog).toBeTruthy()
+          expect(blog.title).toEqual(title)
+          expect(blog.body).toEqual(body)
+          expect(blog.image).toEqual(image)
+          expect(blog.creator).toEqual(creator)
+          done()
+        }).catch((err) => done(err))
+      })
+  })
+
+  it('should respond 400, and NOT update specified blog, if data is invalid', (done) => {
+    const { _id } = blogs[0]
+    const cookie = `token=${tokens[0]}`
+
+    request(app)
+      .patch(`/blogs/${ _id }`)
+      .set('Cookie', cookie)
+      .type('form')
+      .send()
+      .expect(400)
+      .end((err, res) => {
+        if (err) {
+          return done(err)
+        }
+        
+        Blog.find().then((blogs) => {
+          expect(blogs.length).toBe(2)
+          done()
+        })
+      })
+  })
+
+  it('should respond 401, and NOT update specified blog, if user is NOT logged in', (done) => {
+    const { _id } = blogs[0]
+    const { title, body, image, creator } = blogs[3]
+
+    request(app)
+      .patch(`/blogs/${ _id }`)
+      .type('form')
+      .send(`title=${ title }`)
+      .send(`body=${ body }`)
+      .send(`image=${ image }`)
+      .send(`creator=${ creator }`)
+      .expect(401)
+      .end((err, res) => {
+        if (err) {
+          return done(err)
+        }
+        
+        Blog.find().then((blogs) => {
+          expect(blogs.length).toBe(2)
+          done()
+        })
+      })
+  })
+
+  // it('should NOT create a duplicate user', (done) => {
+  //   const { _id } = users[0]
+  //   const { email, password } = users[1]
+  //   const cookie = `token=${tokens[0]}`
+
+  //   request(app)
+  //     .patch(`/users/${ _id }`)
+  //     .set('Cookie', cookie)
+  //     .type('form')
+  //     .send(`email=${email}`)
+  //     .send(`password=${password}`)
+  //     .expect(400)
+  //     .end((err) => {
+  //       if (err) {
+  //         return done(err)
+  //       } else {
+  //         User.findById(_id).then((user) => {
+  //           expect(user._id).toEqual(_id)
+  //           expect(user.email).not.toEqual(email)
+  //           done()
+  //         }).catch(err => done(err))
+  //       }
+  //     })
+  // })
+
+  // it('should NOT update a user with an invalid email', (done) => {
+  //   const { _id } = users[0]
+  //   const { email, password } = users[3]
+  //   const cookie = `token=${tokens[0]}`
+
+  //   request(app)
+  //     .patch(`/users/${ _id }`)
+  //     .set('Cookie', cookie)
+  //     .type('form')
+  //     .send(`email=${email}`)
+  //     .send(`password=${password}`)
+  //     .expect(400)
+  //     .end((err) => {
+  //       if (err) {
+  //         return done(err)
+  //       } else {
+  //         User.findById(_id).then((user) => {
+  //           expect(user._id).toEqual(_id)
+  //           expect(user.email).not.toEqual(email)
+  //           done()
+  //         }).catch(err => done(err))
+  //       }
+  //     })
+  // })
+
+  // it('should NOT update a user with an invalid password', (done) => {
+  //   const { _id } = users[0]
+  //   const { email, password } = users[4]
+  //   const cookie = `token=${tokens[0]}`
+
+  //   request(app)
+  //     .patch(`/users/${ _id }`)
+  //     .set('Cookie', cookie)
+  //     .type('form')
+  //     .send(`email=${email}`)
+  //     .send(`password=${password}`)
+  //     .expect(400)
+  //     .end(done)
+  // })
+})
 
 
 // GET /profile

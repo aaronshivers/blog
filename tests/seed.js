@@ -41,6 +41,12 @@ const blogs = [{
   body: faker.hacker.phrase(),
   image: faker.image.image(),
   creator: users[0]._id
+}, {
+  _id: new ObjectId(),
+  title: faker.company.catchPhrase(),
+  body: faker.hacker.phrase(),
+  image: faker.image.image(),
+  creator: users[0]._id
 }]
 
 const populateUsers = (done) => {
