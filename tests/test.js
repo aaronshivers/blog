@@ -42,11 +42,9 @@ describe('GET /blogs/new', () => {
   })
 
   it('should respond 401, if user is NOT logged in.', (done) => {
-    // const cookie = `token=${tokens[0]}`
 
     request(app)
       .get('/blogs/new')
-      // .set('Cookie', cookie)
       .expect(401)
       .end(done)
   })
@@ -82,6 +80,29 @@ describe('POST /blogs', () => {
           expect(blog[0].creator).toEqual(creator)
           done()
         }).catch((err) => done(err))
+      })
+  })
+
+  it('should respond 400, and NOT create a duplicate blog', (done) => {
+    const cookie = `token=${tokens[0]}`
+    const { title, body, image, creator } = blogs[0]
+    
+    request(app)
+      .post(`/blogs/`)
+      .set('Cookie', cookie)
+      .type('form')
+      .send(`title=${ title }`)
+      .send(`body=${ body }`)
+      .send(`image=${ image }`)
+      .send(`creator=${ creator }`)
+      .expect(400)
+      .end((err, res) => {
+        if (err) return done(err)
+
+        Blog.find().then((blogs) => {
+          expect(blogs.length).toBe(2)
+          done()
+        })
       })
   })
 
@@ -242,7 +263,7 @@ describe('GET /blogs/:id/edit', () => {
 // PATCH /blogs
 describe('PATCH /blogs/:id', () => {
 
-  it('should respond 302, redirect to /blogs, and update the specified blog, if user is logged in', (done) => {
+  it('should respond 302, redirect to /blogs, and update the specified blog, if user is logged in, and is creator', (done) => {
     const { _id } = blogs[0]
     const cookie = `token=${tokens[0]}`
     const { title, body, image, creator } = blogs[3]
@@ -269,7 +290,31 @@ describe('PATCH /blogs/:id', () => {
           expect(blog.image).toEqual(image)
           expect(blog.creator).toEqual(creator)
           done()
-        }).catch((err) => done(err))
+        })
+      })
+  })
+
+  it('should respond 400, and NOT update a duplicate blog', (done) => {
+    const { _id } = blogs[0]
+    const cookie = `token=${tokens[0]}`
+    const { title, body, image, creator } = blogs[1]
+    
+    request(app)
+      .patch(`/blogs/${ _id }`)
+      .set('Cookie', cookie)
+      .type('form')
+      .send(`title=${ title }`)
+      .send(`body=${ body }`)
+      .send(`image=${ image }`)
+      .send(`creator=${ creator }`)
+      .expect(400)
+      .end((err, res) => {
+        if (err) return done(err)
+
+        Blog.find().then((blogs) => {
+          expect(blogs.length).toBe(2)
+          done()
+        })
       })
   })
 
@@ -316,6 +361,37 @@ describe('PATCH /blogs/:id', () => {
           expect(blogs.length).toBe(2)
           done()
         })
+      })
+  })
+
+  it('should respond 401, and NOT update the specified blog, if user is logged in, and is NOT creator', (done) => {
+    const { _id } = blogs[0]
+    const cookie = `token=${tokens[1]}`
+    const { title, body, image, creator } = blogs[3]
+    
+    request(app)
+      .patch(`/blogs/${ _id }`)
+      .set('Cookie', cookie)
+      .type('form')
+      .send(`title=${ title }`)
+      .send(`body=${ body }`)
+      .send(`image=${ image }`)
+      .send(`creator=${ creator }`)
+      .expect(302)
+      .expect((res) => {
+        expect(res.header.location).toEqual('/blogs')
+      })
+      .end((err, res) => {
+        if (err) return done(err)
+
+        Blog.findById({ _id }).then((blog) => {
+          expect(blog).toBeTruthy()
+          expect(blog.title).toEqual(title)
+          expect(blog.body).toEqual(body)
+          expect(blog.image).toEqual(image)
+          expect(blog.creator).toEqual(creator)
+          done()
+        }).catch((err) => done(err))
       })
   })
 
@@ -369,7 +445,7 @@ describe('PATCH /blogs/:id', () => {
   //     })
   // })
 
-  // it('should NOT update a user with an invalid password', (done) => {
+  // it('should NOT update specified blog with an invalid password', (done) => {
   //   const { _id } = users[0]
   //   const { email, password } = users[4]
   //   const cookie = `token=${tokens[0]}`

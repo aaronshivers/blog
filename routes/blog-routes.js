@@ -26,8 +26,13 @@ router.post('/blogs', authenticateUser, (req, res) => {
   const newBlog = { title, body, image, creator }
   const blog = new Blog(newBlog)
 
-  blog.save().then((blog) => {
-    res.status(302).redirect('/blogs')
+  Blog.init().then(() => {
+    blog.save().then((blog) => {
+      res.status(302).redirect('/blogs')
+    }).catch(err => res.status(400).render('error', {
+        statusCode: '400',
+        errorMessage: err.message
+      }))
   }).catch(err => res.status(400).render('error', {
       statusCode: '400',
       errorMessage: err.message
@@ -138,12 +143,30 @@ router.patch('/blogs/:id', authenticateUser, (req, res) => {
   const updatedBlog = { title, body, image }
   const options = { runValidators: true }
 
-  Blog.findByIdAndUpdate(id, updatedBlog, options).then((blog) => {
-    res.status(302).redirect('/blogs')
+  Blog.init().then(() => {
+    Blog.findByIdAndUpdate(id, updatedBlog, options).then((blog) => {
+      res.status(302).redirect('/blogs')
+    }).catch(err => res.status(400).render('error', {
+        statusCode: '400',
+        errorMessage: err.message
+      }))
   }).catch(err => res.status(400).render('error', {
       statusCode: '400',
       errorMessage: err.message
     }))
 })
+
+// router.delete('/blogs/:id', authenticateUser, (req, res) => {
+//   const { token } = req.cookies
+//   const _id = req.params.id
+  
+//   verifyCreator(token).then((creator) => {
+//     const conditions = { _id, creator }
+
+//     Item.findOneAndDelete(conditions).then((item) => {
+//       res.redirect('/items')
+//     })
+//   })
+// })
 
 module.exports = router
