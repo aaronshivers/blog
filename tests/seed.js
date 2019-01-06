@@ -21,6 +21,14 @@ const users = [{
   lastName: faker.name.lastName(),
   jobTitle: faker.name.jobTitle(),
   avatar: faker.image.avatar()
+}, {
+  _id: new ObjectId(),
+  email: faker.internet.email(),
+  password: faker.internet.password(),
+  firstName: faker.name.firstName(),
+  lastName: faker.name.lastName(),
+  jobTitle: faker.name.jobTitle(),
+  avatar: faker.image.avatar()
 }]
 
 const blogs = [{
@@ -40,7 +48,7 @@ const blogs = [{
   title: faker.company.catchPhrase(),
   body: faker.hacker.phrase(),
   image: faker.image.image(),
-  creator: users[0]._id
+  creator: users[2]._id
 }, {
   _id: new ObjectId(),
   title: faker.company.catchPhrase(),

@@ -55,7 +55,7 @@ describe('POST /blogs', () => {
 
   it('should respond 302, redirect to /blogs, and create a new blog if user is logged in', (done) => {
     const cookie = `token=${tokens[0]}`
-    const { title, body, image, creator } = blogs[2]
+    const { title, body, image } = blogs[2]
     
     request(app)
       .post('/blogs')
@@ -64,7 +64,6 @@ describe('POST /blogs', () => {
       .send(`title=${ title }`)
       .send(`body=${ body }`)
       .send(`image=${ image }`)
-      .send(`creator=${ creator }`)
       .expect(302)
       .expect((res) => {
         expect(res.header.location).toEqual('/blogs')
@@ -72,20 +71,18 @@ describe('POST /blogs', () => {
       .end((err, res) => {
         if (err) return done(err)
 
-        Blog.find({ title }).then((blog) => {
-          expect(blog.length).toBe(1)
-          expect(blog[0].title).toEqual(title)
-          expect(blog[0].body).toEqual(body)
-          expect(blog[0].image).toEqual(image)
-          expect(blog[0].creator).toEqual(creator)
+        Blog.findOne({ title }).then((blog) => {
+          expect(blog.title).toEqual(title)
+          expect(blog.body).toEqual(body)
+          expect(blog.image).toEqual(image)
           done()
-        }).catch((err) => done(err))
+        }).catch((err) => done(err.message))
       })
   })
 
   it('should respond 400, and NOT create a duplicate blog', (done) => {
     const cookie = `token=${tokens[0]}`
-    const { title, body, image, creator } = blogs[0]
+    const { title, body, image } = blogs[0]
     
     request(app)
       .post(`/blogs/`)
@@ -94,15 +91,14 @@ describe('POST /blogs', () => {
       .send(`title=${ title }`)
       .send(`body=${ body }`)
       .send(`image=${ image }`)
-      .send(`creator=${ creator }`)
       .expect(400)
       .end((err, res) => {
-        if (err) return done(err)
+        if (err) return done(err.message)
 
         Blog.find().then((blogs) => {
           expect(blogs.length).toBe(2)
           done()
-        })
+        }).catch((err) => done(err.message))
       })
   })
 
@@ -117,18 +113,18 @@ describe('POST /blogs', () => {
       .expect(400)
       .end((err, res) => {
         if (err) {
-          return done(err)
+          return done(err.message)
         }
         
         Blog.find().then((blogs) => {
           expect(blogs.length).toBe(2)
           done()
-        })
+        }).catch((err) => done(err.message))
       })
   })
 
   it('should respond 401, and NOT create a new blog, if user is NOT logged in', (done) => {
-    const { title, body, image, creator } = blogs[2]
+    const { title, body, image } = blogs[2]
 
     request(app)
       .post('/blogs')
@@ -136,17 +132,16 @@ describe('POST /blogs', () => {
       .send(`title=${ title }`)
       .send(`body=${ body }`)
       .send(`image=${ image }`)
-      .send(`creator=${ creator }`)
       .expect(401)
       .end((err, res) => {
         if (err) {
-          return done(err)
+          return done(err.message)
         }
         
         Blog.find().then((blogs) => {
           expect(blogs.length).toBe(2)
           done()
-        })
+        }).catch((err) => done(err.message))
       })
   })
 })
@@ -161,15 +156,15 @@ describe('GET /blogs', () => {
   })
 })
 
-// GET /blogs/:creator/list
-describe('GET /blogs/:creator/list', () => {
+// GET /blogs/list
+describe('GET /blogs/list', () => {
 
-  it('should respond 200, and GET /blogs/:creator/list, if user logged in and is creator', (done) => {
+  it('should respond 200, and GET /blogs/list, if user logged in and is creator', (done) => {
     const cookie = `token=${tokens[0]}`
     const { _id } = users[0]
 
     request(app)
-      .get(`/blogs/${ _id }/list`)
+      .get(`/blogs/list`)
       .set('Cookie', cookie)
       .expect(200)
       .end(done)
@@ -179,7 +174,7 @@ describe('GET /blogs/:creator/list', () => {
     const { _id } = users[0]
 
     request(app)
-      .get(`/blogs/${ _id }/list`)
+      .get(`/blogs/list`)
       .expect(401)
       .end(done)
   })
@@ -190,7 +185,7 @@ describe('GET /blogs/:creator/list', () => {
     const { _id } = users[0]
 
     request(app)
-      .get(`/blogs/${ _id }/list`)
+      .get(`/blogs/list`)
       .set('Cookie', cookie)
       .expect(401)
       .end(done)
@@ -266,7 +261,7 @@ describe('PATCH /blogs/:id', () => {
   it('should respond 302, redirect to /blogs, and update the specified blog, if user is logged in, and is creator', (done) => {
     const { _id } = blogs[0]
     const cookie = `token=${tokens[0]}`
-    const { title, body, image, creator } = blogs[3]
+    const { title, body, image } = blogs[3]
     
     request(app)
       .patch(`/blogs/${ _id }`)
@@ -275,30 +270,28 @@ describe('PATCH /blogs/:id', () => {
       .send(`title=${ title }`)
       .send(`body=${ body }`)
       .send(`image=${ image }`)
-      .send(`creator=${ creator }`)
       .expect(302)
       .expect((res) => {
         expect(res.header.location).toEqual('/blogs')
       })
       .end((err, res) => {
-        if (err) return done(err)
+        if (err) return done(err.message)
 
         Blog.findById({ _id }).then((blog) => {
           expect(blog).toBeTruthy()
           expect(blog.title).toEqual(title)
           expect(blog.body).toEqual(body)
           expect(blog.image).toEqual(image)
-          expect(blog.creator).toEqual(creator)
           done()
-        })
+        }).catch((err) => done(err.message))
       })
   })
 
-  it('should respond 400, and NOT update a duplicate blog', (done) => {
-    const { _id } = blogs[0]
+  it('should respond 404, if specified blog is not found', (done) => {
+    const { _id } = new ObjectId()
     const cookie = `token=${tokens[0]}`
-    const { title, body, image, creator } = blogs[1]
-    
+    const { title, body, image } = blogs[3]
+
     request(app)
       .patch(`/blogs/${ _id }`)
       .set('Cookie', cookie)
@@ -306,15 +299,37 @@ describe('PATCH /blogs/:id', () => {
       .send(`title=${ title }`)
       .send(`body=${ body }`)
       .send(`image=${ image }`)
-      .send(`creator=${ creator }`)
-      .expect(400)
+      .expect(404)
       .end((err, res) => {
-        if (err) return done(err)
+        if (err) return done(err.message)
 
-        Blog.find().then((blogs) => {
-          expect(blogs.length).toBe(2)
+        Blog.findOne({ title }).then((blog) => {
+          expect(blog).toBeFalsy()
           done()
-        })
+        }).catch((err) => done(err.message))
+      })
+  })
+
+  it('should respond 400, and NOT update a duplicate blog', (done) => {
+    const { _id } = blogs[0]
+    const cookie = `token=${tokens[0]}`
+    const { title, body, image } = blogs[1]
+    
+    request(app)
+      .patch(`/blogs/${ _id }`)
+      .set('Cookie', cookie)
+      .expect(400)
+      .type('form')
+      .send(`title=${ title }`)
+      .send(`body=${ body }`)
+      .send(`image=${ image }`)
+      .end((err, res) => {
+        if (err) return done(err.message)
+
+        Blog.find({ title }).then((blogs) => {
+          expect(blogs.length).toBe(1)
+          done()
+        }).catch((err) => done(err.message))
       })
   })
 
@@ -330,137 +345,142 @@ describe('PATCH /blogs/:id', () => {
       .expect(400)
       .end((err, res) => {
         if (err) {
-          return done(err)
+          return done(err.message)
         }
         
         Blog.find().then((blogs) => {
           expect(blogs.length).toBe(2)
           done()
-        })
+        }).catch((err) => done(err.message))
       })
   })
 
   it('should respond 401, and NOT update specified blog, if user is NOT logged in', (done) => {
     const { _id } = blogs[0]
-    const { title, body, image, creator } = blogs[3]
+    const { title, body, image } = blogs[3]
 
     request(app)
       .patch(`/blogs/${ _id }`)
+      .expect(401)
       .type('form')
       .send(`title=${ title }`)
       .send(`body=${ body }`)
       .send(`image=${ image }`)
-      .send(`creator=${ creator }`)
-      .expect(401)
       .end((err, res) => {
-        if (err) {
-          return done(err)
-        }
+        if (err) return done(err.message)
         
         Blog.find().then((blogs) => {
           expect(blogs.length).toBe(2)
           done()
-        })
+        }).catch((err) => done(err.message))
       })
   })
 
   it('should respond 401, and NOT update the specified blog, if user is logged in, and is NOT creator', (done) => {
     const { _id } = blogs[0]
-    const cookie = `token=${tokens[1]}`
-    const { title, body, image, creator } = blogs[3]
-    
+    const cookie = `token=${tokens[2]}`
+    const { title, body, image, creator } = blogs[2]
+
     request(app)
       .patch(`/blogs/${ _id }`)
       .set('Cookie', cookie)
+      .expect(401)
       .type('form')
       .send(`title=${ title }`)
       .send(`body=${ body }`)
       .send(`image=${ image }`)
-      .send(`creator=${ creator }`)
+      .end((err, res) => {
+        if (err) return done(err.message)
+
+        Blog.findById({ _id }).then((blog) => {
+
+          expect(blog).toBeTruthy()
+          expect(blog.title).not.toEqual(title)
+          expect(blog.body).not.toEqual(body)
+          expect(blog.image).not.toEqual(image)
+          expect(blog.creator).not.toEqual(creator)
+          done()
+        }).catch((err) => done(err.message))
+      })
+  })
+})
+
+// DELETE /items/:id
+describe('DELETE /blogs/:id', () => {
+
+  it('should respond 302, and delete a blog, if user is logged in, and is creator', (done) => {
+    const { _id } = blogs[0]
+    const cookie = `token=${tokens[0]}`
+
+    request(app)
+      .delete(`/blogs/${ _id }`)
+      .set('Cookie', cookie)
       .expect(302)
       .expect((res) => {
         expect(res.header.location).toEqual('/blogs')
       })
       .end((err, res) => {
-        if (err) return done(err)
+        if (err) return done(err.message)
 
         Blog.findById({ _id }).then((blog) => {
-          expect(blog).toBeTruthy()
-          expect(blog.title).toEqual(title)
-          expect(blog.body).toEqual(body)
-          expect(blog.image).toEqual(image)
-          expect(blog.creator).toEqual(creator)
+          expect(blog).toBeFalsy()
           done()
-        }).catch((err) => done(err))
+        }).catch((err) => done(err.message))
       })
   })
 
-  // it('should NOT create a duplicate user', (done) => {
-  //   const { _id } = users[0]
-  //   const { email, password } = users[1]
-  //   const cookie = `token=${tokens[0]}`
+  it('should return 404 if specified item is not found', (done) => {
+    const id =  new ObjectId()
+    const cookie = `token=${tokens[0]}`
 
-  //   request(app)
-  //     .patch(`/users/${ _id }`)
-  //     .set('Cookie', cookie)
-  //     .type('form')
-  //     .send(`email=${email}`)
-  //     .send(`password=${password}`)
-  //     .expect(400)
-  //     .end((err) => {
-  //       if (err) {
-  //         return done(err)
-  //       } else {
-  //         User.findById(_id).then((user) => {
-  //           expect(user._id).toEqual(_id)
-  //           expect(user.email).not.toEqual(email)
-  //           done()
-  //         }).catch(err => done(err))
-  //       }
-  //     })
-  // })
+    request(app)
+      .delete(`/blogs/${id}`)
+      .set('Cookie', cookie)
+      .expect(404)
+      .end((err, res) => {
+        if (err) return done(err.message)
 
-  // it('should NOT update a user with an invalid email', (done) => {
-  //   const { _id } = users[0]
-  //   const { email, password } = users[3]
-  //   const cookie = `token=${tokens[0]}`
+        Blog.find().then((blogs) => {
+          expect(blogs.length).toBe(2)
+          done()
+        }).catch((err) => done(err.message))
+      })
+  })
 
-  //   request(app)
-  //     .patch(`/users/${ _id }`)
-  //     .set('Cookie', cookie)
-  //     .type('form')
-  //     .send(`email=${email}`)
-  //     .send(`password=${password}`)
-  //     .expect(400)
-  //     .end((err) => {
-  //       if (err) {
-  //         return done(err)
-  //       } else {
-  //         User.findById(_id).then((user) => {
-  //           expect(user._id).toEqual(_id)
-  //           expect(user.email).not.toEqual(email)
-  //           done()
-  //         }).catch(err => done(err))
-  //       }
-  //     })
-  // })
+  it('should return 401, if user is NOT logged in', (done) => {
+    const { _id } = blogs[0]
 
-  // it('should NOT update specified blog with an invalid password', (done) => {
-  //   const { _id } = users[0]
-  //   const { email, password } = users[4]
-  //   const cookie = `token=${tokens[0]}`
+    request(app)
+      .delete(`/blogs/${ _id }`)
+      .expect(401)
+      .end((err, res) => {
+        if (err) return done(err.message)
 
-  //   request(app)
-  //     .patch(`/users/${ _id }`)
-  //     .set('Cookie', cookie)
-  //     .type('form')
-  //     .send(`email=${email}`)
-  //     .send(`password=${password}`)
-  //     .expect(400)
-  //     .end(done)
-  // })
+        Blog.findById({ _id }).then((blog) => {
+          expect(blog).toBeTruthy()
+          done()
+        }).catch((err) => done(err.message))
+      })
+  })
+
+  it('should return 401, if user is logged in, but NOT creator', (done) => {
+    const { _id } = blogs[0]
+    const cookie = `token=${tokens[2]}`
+
+    request(app)
+      .delete(`/blogs/${ _id }`)
+      .set('Cookie', cookie)
+      .expect(401)
+      .end((err, res) => {
+        if (err) return done(err.message)
+
+        Blog.findById({ _id }).then((blog) => {
+          expect(blog).toBeTruthy()
+          done()
+        }).catch((err) => done(err.message))
+      })
+  })
 })
-
 
 // GET /profile
 describe('GET /profile', () => {

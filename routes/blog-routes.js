@@ -95,23 +95,14 @@ router.get('/blogs/search', async (req, res, next) => {
 })
 
 // GET /blogs/:creator/list
-router.get('/blogs/:creator/list', authenticateUser, async (req, res, next) => {
+router.get('/blogs/list', authenticateUser, async (req, res, next) => {
   const { token } = req.cookies
-  const { creator } = req.params
-  const decoded = jwt.verify(token, process.env.JWT_SECRET)
 
   verifyCreator(token).then((creator) => {
 
-    if (creator !== decoded._id) {
-      return res.status(401).render('error', {
-        statusCode: '401',
-        errorMessage: `Sorry, it doesn't look like you are the creator of those blogs.`
-      })
-    } else {
-      Blog.find({ creator }).sort({ date: -1 }).then((blogs) => {
-        res.render('blog-list', { blogs })
-      })
-    }
+    Blog.find({ creator }).sort({ date: -1 }).then((blogs) => {
+      res.render('blog-list', { blogs })
+    })
   })
 })
 
@@ -121,7 +112,9 @@ router.get('/blogs/:id/edit', authenticateUser, (req, res) => {
   const _id = req.params.id
 
   verifyCreator(token).then((creator) => {
-    Blog.findOne({ _id, creator }).then((blog) => {
+    const conditions = { _id, creator }
+
+    Blog.findOne(conditions).then((blog) => {
       if (!blog) return res.status(401).render('error', {
         statusCode: '401',
         errorMessage: `Sorry, it doesn't look like you created that blog.`
@@ -133,30 +126,54 @@ router.get('/blogs/:id/edit', authenticateUser, (req, res) => {
 
 // PATCH /blogs/:id
 router.patch('/blogs/:id', authenticateUser, (req, res) => {
-  const { id } = req.params
+  const { token } = req.cookies
+  const _id = req.params.id
   const { title, body, image } = req.body
-  const updatedBlog = { title, body, image }
+  const update = { title, body, image }
   const options = { runValidators: true }
 
-  Blog.findByIdAndUpdate(id, updatedBlog, options).then((blog) => {
-    res.status(302).redirect('/blogs')
-  }).catch(err => res.status(400).render('error', {
+  verifyCreator(token, _id).then((creator) => {
+    const conditions = { _id, creator }
+
+    Blog.findOneAndUpdate(conditions, update, options).then((blog) => {
+
+      if (!blog) {
+        res.status(404).render('error', {
+          statusCode: '404',
+          errorMessage: `Sorry, we couldn't find that blog in our database.`
+        })
+      } else {
+        res.status(302).redirect('/blogs')
+      }
+    }).catch(err => res.status(400).render('error', {
       statusCode: '400',
       errorMessage: err.message
     }))
+  }).catch(err => res.send('dookie'))
 })
 
-// router.delete('/blogs/:id', authenticateUser, (req, res) => {
-//   const { token } = req.cookies
-//   const _id = req.params.id
+// DELETE /blogs/:id
+router.delete('/blogs/:id', authenticateUser, (req, res) => {
+  const { token } = req.cookies
+  const _id = req.params.id
   
-//   verifyCreator(token).then((creator) => {
-//     const conditions = { _id, creator }
+  verifyCreator(token).then((creator) => {
+    const conditions = { _id, creator }
 
-//     Item.findOneAndDelete(conditions).then((item) => {
-//       res.redirect('/items')
-//     })
-//   })
-// })
+    Blog.findOneAndDelete(conditions).then((blog) => {
+      if (!blog) {
+        res.status(404).render('error', {
+          statusCode: '404',
+          errorMessage: `Sorry, we couldn't find that blog in our database.`
+        })
+      } else {
+        res.status(302).redirect('/blogs')
+      }
+    }).catch(err => res.status(400).render('error', {
+      statusCode: '400',
+      errorMessage: err.message
+    }))
+  })
+})
 
 module.exports = router
