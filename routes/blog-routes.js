@@ -26,8 +26,7 @@ router.post('/blogs', authenticateUser, (req, res) => {
   const newBlog = { title, body, image, creator }
   const blog = new Blog(newBlog)
 
-  blog.save().then((err, blog) => {
-    // if (err) return res.send(err.message)
+  blog.save().then((blog) => {
     res.status(302).redirect('/blogs')
   }).catch(err => res.status(400).render('error', {
       statusCode: '400',
@@ -95,12 +94,24 @@ router.get('/blogs/search', async (req, res, next) => {
   }
 })
 
-// GET /blogs/:creator/user
-router.get('/blogs/:creator/user', async (req, res, next) => {
+// GET /blogs/:creator/list
+router.get('/blogs/:creator/list', authenticateUser, async (req, res, next) => {
+  const { token } = req.cookies
   const { creator } = req.params
+  const decoded = jwt.verify(token, process.env.JWT_SECRET)
 
-  Blog.find({ creator }).sort({ date: -1 }).then((blogs) => {
-    res.render('blog-list', { blogs })
+  verifyCreator(token).then((creatorId) => {
+
+    if (creatorId !== decoded._id) {
+      return res.status(401).render('error', {
+        statusCode: '401',
+        errorMessage: `Sorry, it doesn't look like you are the creator of those blogs.`
+      })
+    } else {
+      Blog.find({ creatorId }).sort({ date: -1 }).then((blogs) => {
+        res.render('blog-list', { blogs })
+      })
+    }
   })
 })
 

@@ -106,7 +106,7 @@ describe('POST /blogs', () => {
       })
   })
 
-  it('should respond 401, and NOT create a new blog, if user is not logged in', (done) => {
+  it('should respond 401, and NOT create a new blog, if user is NOT logged in', (done) => {
     const { title, body, image, creator } = blogs[2]
 
     request(app)
@@ -136,6 +136,42 @@ describe('GET /blogs', () => {
     request(app)
       .get('/blogs')
       .expect(200)
+      .end(done)
+  })
+})
+
+// GET /blogs/:creator/list
+describe('GET /blogs/:creator/list', () => {
+
+  it('should respond 200, and GET /blogs/:creator/list, if user logged in and is creator', (done) => {
+    const cookie = `token=${tokens[0]}`
+    const { _id } = users[0]
+
+    request(app)
+      .get(`/blogs/${ _id }/list`)
+      .set('Cookie', cookie)
+      .expect(200)
+      .end(done)
+  })
+
+  it('should respond 401, if user is NOT logged in', (done) => {
+    const { _id } = users[0]
+
+    request(app)
+      .get(`/blogs/${ _id }/list`)
+      .expect(401)
+      .end(done)
+  })
+
+  it('should respond 401, if user is logged in, but NOT creator', (done) => {
+
+    const cookie = `token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1YzMxNWJhYWViNjc5ZjdhMWVlNzAzYjEiLCJhZG1pbiI6ZmFsc2UsImlhdCI6MTU0NjczODYwMiwiZXhwIjoxNTQ2ODI1MDAyfQ.ZSDfhUNvJBs2TyknQXbStu77-qpVJFDakm9KBFV7IWA`
+    const { _id } = users[0]
+
+    request(app)
+      .get(`/blogs/${ _id }/list`)
+      .set('Cookie', cookie)
+      .expect(401)
       .end(done)
   })
 })
@@ -203,3 +239,19 @@ describe('GET /blogs/:id/edit', () => {
   })
 })
 
+
+
+
+// GET /profile
+describe('GET /profile', () => {
+
+  it('should respond 401, if user has token, but is not in database', (done) => {
+    const cookie = `token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1YzMxNWJhYWViNjc5ZjdhMWVlNzAzYjEiLCJhZG1pbiI6ZmFsc2UsImlhdCI6MTU0NjczODYwMiwiZXhwIjoxNTQ2ODI1MDAyfQ.ZSDfhUNvJBs2TyknQXbStu77-qpVJFDakm9KBFV7IWA`
+
+    request(app)
+      .get('/profile')
+      .set('Cookie', cookie)
+      .expect(401)
+      .end(done)
+  })
+})
