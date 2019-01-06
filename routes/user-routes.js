@@ -146,9 +146,9 @@ router.post('/login', (req, res) => {
         }
       })
     } else {
-      res.status(404).render('error', {
-        statusCode: '404',
-        errorMessage: 'Sorry, we could not find that user in our database.'
+      res.status(401).render('error', {
+        statusCode: '401',
+        errorMessage: 'Please check your login credentials, and try again.'
       })
     }
   }).catch(err => res.status(401).send('Please check your login credentials, and try again.'))
@@ -156,7 +156,7 @@ router.post('/login', (req, res) => {
 
 // GET /logout
 router.get('/logout', (req, res) => {
-  res.clearCookie('token').redirect(`/`)
+  res.clearCookie('token').redirect(`/blogs`)
 })
 
 // GET /users/:id/edit

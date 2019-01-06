@@ -624,7 +624,7 @@ describe('GET /login', () => {
 
 describe('POST /login', () => {
   
-  it('should login user and create a token', (done) => {
+  it('should return 302, login user, and create a token', (done) => {
     const { email, password } = users[0]
   
     request(app)
@@ -634,12 +634,13 @@ describe('POST /login', () => {
       .send(`password=${password}`)
       .expect(302)
       .expect((res) => {
+        expect(res.header.location).toEqual('/profile')
         expect(res.header['set-cookie']).toBeTruthy()
       })
       .end(done)
   })
 
-  it('should NOT login user if email is not in the database', (done) => {
+  it('should return 401, and NOT login user if email is not in the database', (done) => {
     const { email, password } = users[2]
     
     request(app)
@@ -647,14 +648,14 @@ describe('POST /login', () => {
       .type('form')
       .send(`email=${email}`)
       .send(`password=${password}`)
-      .expect(404)
+      .expect(401)
       .expect((res) => {
         expect(res.header['set-cookie']).toBeFalsy()
       })
       .end(done)
   })
 
-  it('should NOT login user if password is incorrect', (done) => {
+  it('should return 401, NOT login user if password is incorrect', (done) => {
     const { email } = users[0]
     const { password } = users[2]
     
@@ -666,6 +667,24 @@ describe('POST /login', () => {
       .expect(401)
       .expect((res) => {
         expect(res.header['set-cookie']).toBeFalsy()
+      })
+      .end(done)
+  })
+})
+
+// GET /logout
+describe('GET /logout', () => {
+  
+  it('should return 302, logout user and delete auth token', (done) => {
+    const cookie = `token=${tokens[0]}`
+    
+    request(app)
+      .get('/logout')
+      .set('Cookie', cookie)
+      .expect(302)
+      .expect((res) => {
+        expect(res.header.location).toEqual('/blogs')
+        expect(res.header['set-cookie']).toEqual(["token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT"])
       })
       .end(done)
   })
