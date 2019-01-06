@@ -8,7 +8,7 @@ const createToken = require('../middleware/create-token')
 const users = [{
   _id: new ObjectId(),
   email: faker.internet.email(),
-  password: `asdfASDF1234!@#`,
+  password: `0asdfASDF1234!@#`,
   firstName: faker.name.firstName(),
   lastName: faker.name.lastName(),
   jobTitle: faker.name.jobTitle(),
@@ -16,7 +16,7 @@ const users = [{
 }, {
   _id: new ObjectId(),
   email: faker.internet.email(),
-  password: `asdfASDF1234!@#`,
+  password: `1asdfASDF1234!@#`,
   firstName: faker.name.firstName(),
   lastName: faker.name.lastName(),
   jobTitle: faker.name.jobTitle(),
@@ -24,7 +24,7 @@ const users = [{
 }, {
   _id: new ObjectId(),
   email: faker.internet.email(),
-  password: `asdfASDF1234!@#`,
+  password: `2asdfASDF1234!@#`,
   firstName: faker.name.firstName(),
   lastName: faker.name.lastName(),
   jobTitle: faker.name.jobTitle(),
@@ -32,7 +32,7 @@ const users = [{
 }, {
   _id: new ObjectId(),
   email: `invalid.email@net`, // invalid email
-  password: `asdfASDF1234!@#`,
+  password: `3asdfASDF1234!@#`,
   firstName: faker.name.firstName(),
   lastName: faker.name.lastName(),
   jobTitle: faker.name.jobTitle(),
@@ -40,7 +40,7 @@ const users = [{
 }, {
   _id: new ObjectId(),
   email: faker.internet.email(),
-  password: `asdfASDF1234`, // invalid password
+  password: `4asdfASDF1234`, // invalid password
   firstName: faker.name.firstName(),
   lastName: faker.name.lastName(),
   jobTitle: faker.name.jobTitle(),
