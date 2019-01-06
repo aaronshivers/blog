@@ -25,6 +25,12 @@
 
   </form>
 
+  <form class="mt-2" id="delete" action="/blogs/<%= blog._id %>?_method=DELETE" method="POST">
+
+    <button type="submit" class="btn btn-lg btn-block btn-outline-danger">Delete Blog</button>
+
+  </form>
+
 </div>
 
 <% include partials/bottom %>
