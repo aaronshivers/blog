@@ -26,13 +26,8 @@ router.post('/blogs', authenticateUser, (req, res) => {
   const newBlog = { title, body, image, creator }
   const blog = new Blog(newBlog)
 
-  Blog.init().then(() => {
-    blog.save().then((blog) => {
-      res.status(302).redirect('/blogs')
-    }).catch(err => res.status(400).render('error', {
-        statusCode: '400',
-        errorMessage: err.message
-      }))
+  blog.save().then((blog) => {
+    res.status(302).redirect('/blogs')
   }).catch(err => res.status(400).render('error', {
       statusCode: '400',
       errorMessage: err.message
@@ -143,13 +138,8 @@ router.patch('/blogs/:id', authenticateUser, (req, res) => {
   const updatedBlog = { title, body, image }
   const options = { runValidators: true }
 
-  Blog.init().then(() => {
-    Blog.findByIdAndUpdate(id, updatedBlog, options).then((blog) => {
-      res.status(302).redirect('/blogs')
-    }).catch(err => res.status(400).render('error', {
-        statusCode: '400',
-        errorMessage: err.message
-      }))
+  Blog.findByIdAndUpdate(id, updatedBlog, options).then((blog) => {
+    res.status(302).redirect('/blogs')
   }).catch(err => res.status(400).render('error', {
       statusCode: '400',
       errorMessage: err.message
