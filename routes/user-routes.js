@@ -9,6 +9,7 @@ const validatePassword = require('../middleware/validate-password')
 const createToken = require('../middleware/create-token')
 const authenticateUser = require('../middleware/authenticate-user')
 const authenticateAdmin = require('../middleware/authenticate-admin')
+const verifyCreator = require('../middleware/verify-creator')
 
 const cookieExpiration = { expires: new Date(Date.now() + 86400000) }
 const saltRounds = 10
@@ -160,11 +161,20 @@ router.get('/logout', (req, res) => {
 })
 
 // GET /users/:id/edit
-router.get('/users/:id/edit', (req, res) => {
-  const { id } = req.params
+router.get('/users/edit', authenticateUser, (req, res) => {
+  const { token } = req.cookies
 
-  User.findById(id).then((user) => {
-    res.render('edit-user', { user })
+  verifyCreator(token).then((id) => {
+    User.findById(id).then((user) => {
+      if (!user) {
+        res.status(404).render('error', {
+          statusCode: '404',
+          errorMessage: `Sorry, we can't find that user in our database.`
+        })
+      } else {
+        res.render('edit-user', { user })
+      }
+    })
   })
 })
 

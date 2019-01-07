@@ -689,3 +689,138 @@ describe('GET /logout', () => {
       .end(done)
   })
 })
+
+// GET /users/:id/edit
+describe('GET /users/edit', () => {
+
+  it('should respond 200, and GET /blogs/:id/edit, if user is logged in.', (done) => {
+    const cookie = `token=${tokens[0]}`
+    const { _id } = users[0]._id
+
+    request(app)
+      .get(`/users/edit`)
+      .set('Cookie', cookie)
+      .expect(200)
+      .end(done)
+  })
+
+  it('should respond 401, if user is NOT logged in.', (done) => {
+    const { _id } = users[0]._id
+
+    request(app)
+      .get(`/users/edit`)
+      .expect(401)
+      .end(done)
+  })
+
+  it('should respond 401, if user has token, but user NOT in the database.', (done) => {
+    const cookie = `token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1YzMyOTEwNTYyYzM0ZDZjZGYwMWZkODciLCJhZG1pbiI6ZmFsc2UsImlhdCI6MTU0NjgxNzc5NywiZXhwIjoxNTQ2OTA0MTk3fQ.FvyXCMXxjLiQlFXQe-Y7uPVn0W41F8uyTQGnJAxe1eI`
+
+    request(app)
+      .get(`/users/edit`)
+      .set('Cookie', cookie)
+      .expect(401)
+      .end(done)
+  })
+})
+
+// // PATCH /users
+// describe('PATCH /users/:id', () => {
+  
+//   it('should return 302, and update the specified user, if logged in and user is creator', (done) => {
+//     const { _id } = users[0]
+//     const { email, password } = users[2]
+//     const cookie = `token=${tokens[0]}`
+
+//     request(app)
+//       .patch(`/users/${ _id }`)
+//       .set('Cookie', cookie)
+//       .type('form')
+//       .send(`email=${email}`)
+//       .send(`password=${password}`)
+//       .expect(302)
+//       .expect((res) => {
+//         // expect(res.text).toContain(_id.toString())
+//         // expect(res.text).toContain(email)
+//       })
+//       .end((err) => {
+//         if (err) {
+//           return done(err)
+//         } else {
+//           User.findById(_id).then((user) => {
+//             expect(user).toBeTruthy()
+//             expect(user._id).toEqual(_id)
+//             expect(user.email).toEqual(email)
+//             expect(user.password).not.toEqual(password)
+//             done()
+//           }).catch(err => done(err))
+//         }
+//       })
+//   })
+
+  // it('should NOT create a duplicate user', (done) => {
+  //   const { _id } = users[0]
+  //   const { email, password } = users[1]
+  //   const cookie = `token=${tokens[0]}`
+
+  //   request(app)
+  //     .patch(`/users/${ _id }`)
+  //     .set('Cookie', cookie)
+  //     .type('form')
+  //     .send(`email=${email}`)
+  //     .send(`password=${password}`)
+  //     .expect(400)
+  //     .end((err) => {
+  //       if (err) {
+  //         return done(err)
+  //       } else {
+  //         User.findById(_id).then((user) => {
+  //           expect(user._id).toEqual(_id)
+  //           expect(user.email).not.toEqual(email)
+  //           done()
+  //         }).catch(err => done(err))
+  //       }
+  //     })
+  // })
+
+  // it('should NOT update a user with an invalid email', (done) => {
+  //   const { _id } = users[0]
+  //   const { email, password } = users[3]
+  //   const cookie = `token=${tokens[0]}`
+
+  //   request(app)
+  //     .patch(`/users/${ _id }`)
+  //     .set('Cookie', cookie)
+  //     .type('form')
+  //     .send(`email=${email}`)
+  //     .send(`password=${password}`)
+  //     .expect(400)
+  //     .end((err) => {
+  //       if (err) {
+  //         return done(err)
+  //       } else {
+  //         User.findById(_id).then((user) => {
+  //           expect(user._id).toEqual(_id)
+  //           expect(user.email).not.toEqual(email)
+  //           done()
+  //         }).catch(err => done(err))
+  //       }
+  //     })
+  // })
+
+  // it('should NOT update a user with an invalid password', (done) => {
+  //   const { _id } = users[0]
+  //   const { email, password } = users[4]
+  //   const cookie = `token=${tokens[0]}`
+
+  //   request(app)
+  //     .patch(`/users/${ _id }`)
+  //     .set('Cookie', cookie)
+  //     .type('form')
+  //     .send(`email=${email}`)
+  //     .send(`password=${password}`)
+  //     .expect(400)
+  //     .end(done)
+  // })
+// })
+
