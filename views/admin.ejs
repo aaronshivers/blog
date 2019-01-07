@@ -1,0 +1,24 @@
+<% include partials/top %>
+
+<div class="container">
+  
+  <h1 class="text-center">Admin Area</h1>
+
+  <form class="form" action="/users/results" method="GET">
+    
+    <div class="form-group">
+      <label for="query">User Search</label>
+      <input class="form-control" type="search" name="query" placeholder="Enter Search..." required>
+    </div>
+
+    <button class="btn btn-lg btn-outline-success btn-block">Search Users</button>
+
+  </form>
+
+  <a class="btn btn-outline-primary btn-block btn-lg mt-3" href="/users">View All Users</a>
+
+</div>
+
+
+
+<% include partials/bottom %>

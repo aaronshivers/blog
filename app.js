@@ -14,6 +14,7 @@ const { PORT } = process.env
 
 const userRoutes = require('./routes/user-routes')
 const blogRoutes = require('./routes/blog-routes')
+const authenticateAdmin = require('./middleware/authenticate-admin')
 
 app.set('view engine', 'ejs')
 
@@ -29,11 +30,13 @@ app.use(blogRoutes)
 
 app.get('/', (req, res) => res.redirect('/blogs'))
 
+app.get('/admin', authenticateAdmin, (req, res) => {
+  res.render('admin')
+})
+
 app.get('/populate', (req, res) => {
   populateUsers()
-  
   setTimeout(() => populateBlogs(), 5000)
-
   setTimeout(() => res.redirect('/'), 10000)
 })
 
