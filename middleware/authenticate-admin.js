@@ -1,24 +1,40 @@
 const jwt = require('jsonwebtoken')
 
-const authenticateUser = (req, res, next) => {
+const User = require(`../models/user-model`)
+
+const authenticateAdmin = (req, res, next) => {
   const token = req.cookies.token
   const secret = process.env.JWT_SECRET
 
   if (token) {
     jwt.verify(token, secret, (err, decoded) => {
       if (err) {
-        res.status(401).send(err.message)
+        res.status(401).render('error', {
+          statusCode: '401',
+          errorMessage: err.message
+        })
       } else {
-        if (decoded.admin) {
-          next()
-        } else {
-          res.status(401).send('Sorry, you must be an admin to view this page.')
-        }
+        User.findById(decoded._id).then((user) => {
+          if (user.admin) {
+            next()
+          } else {
+            res.status(401).render('error', {
+              statusCode: '401',
+              errorMessage: `Sorry, you must be an admin to view this page.`
+            })
+          }
+        }).catch(err => res.status(401).render('error', {
+          statusCode: '401',
+          errorMessage: `Sorry, you must be an admin to view this page.`
+        }))
       }
     })
   } else {
-    res.status(401).send('You must login to view this page.')
+    res.status(401).render('error', {
+      statusCode: '401',
+      errorMessage: 'You must login to view this page.'
+    })
   }
 }
 
-module.exports = authenticateUser
+module.exports = authenticateAdmin

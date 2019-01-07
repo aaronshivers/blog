@@ -20,7 +20,8 @@ const users = [{
   firstName: faker.name.firstName(),
   lastName: faker.name.lastName(),
   jobTitle: faker.name.jobTitle(),
-  avatar: faker.image.avatar()
+  avatar: faker.image.avatar(),
+  admin: true // Admin Account
 }, {
   _id: new ObjectId(),
   email: faker.internet.email(),

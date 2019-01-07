@@ -63,7 +63,7 @@ router.get('/profile', authenticateUser, (req, res) => {
 })
 
 // GET /users
-router.get('/users', authenticateUser, async (req, res, next) => {
+router.get('/users', authenticateAdmin, async (req, res, next) => {
   
   try {
     const [ results, itemCount ] = await Promise.all([

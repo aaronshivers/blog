@@ -623,8 +623,8 @@ describe('POST /users', () => {
 // GET /users
 describe('GET /users', () => {
 
-  it('should respond 200, if user is logged in', (done) => {
-    const cookie = `token=${tokens[0]}`
+  it('should respond 200, if user is logged in, and is Admin', (done) => {
+    const cookie = `token=${tokens[1]}`
 
     request(app)
       .get('/users')
@@ -636,6 +636,16 @@ describe('GET /users', () => {
   it('should respond 401, if user is NOT logged in', (done) => {
     request(app)
       .get('/users')
+      .expect(401)
+      .end(done)
+  })
+
+  it('should respond 401, if user is logged in, but NOT Admin', (done) => {
+    const cookie = `token=${tokens[0]}`
+
+    request(app)
+      .get('/users')
+      .set('Cookie', cookie)
       .expect(401)
       .end(done)
   })
@@ -901,7 +911,7 @@ describe('PATCH /users/:id', () => {
       })
   })
 
-  it('should NOT update a user with an invalid password', (done) => {
+  it('should return 402, and NOT update a user with an invalid password', (done) => {
     const { _id } = users[0]
     const { email, password } = users[4]
     const cookie = `token=${tokens[0]}`
