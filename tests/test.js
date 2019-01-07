@@ -624,7 +624,7 @@ describe('POST /users', () => {
 describe('GET /users', () => {
 
   it('should respond 200, if user is logged in', (done) => {
-  const cookie = `token=${tokens[0]}`
+    const cookie = `token=${tokens[0]}`
 
     request(app)
       .get('/users')
@@ -636,6 +636,30 @@ describe('GET /users', () => {
   it('should respond 401, if user is NOT logged in', (done) => {
     request(app)
       .get('/users')
+      .expect(401)
+      .end(done)
+  })
+})
+
+// GET /users/:id/view
+describe('GET /users/:id/view', () => {
+
+  it('should respond 200, if user is logged in', (done) => {
+    const cookie = `token=${tokens[0]}`
+    const { _id } = users[0]._id
+
+    request(app)
+      .get(`/users/${ _id }/view`)
+      .set('Cookie', cookie)
+      .expect(200)
+      .end(done)
+  })
+
+  it('should respond 401, if user is NOT logged in', (done) => {
+    const { _id } = users[0]._id
+
+    request(app)
+      .get(`/users/${ _id }/view`)
       .expect(401)
       .end(done)
   })

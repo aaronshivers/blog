@@ -86,7 +86,7 @@ router.get('/users', authenticateUser, async (req, res, next) => {
   }
 })
 
-router.get('/users/:id/view', (req, res) => {
+router.get('/users/:id/view', authenticateUser, (req, res) => {
   const { id } = req.params
 
   User.findById(id).then((user) => {
@@ -94,36 +94,37 @@ router.get('/users/:id/view', (req, res) => {
   })
 })
 
-router.get('/users/search', (req, res) => {
-  res.render('search')
-})
+// NOTE * remember to write tests before reactivating these routes
+// router.get('/users/search', authenticateUser, (req, res) => {
+//   res.render('search')
+// })
 
-router.get('/users/results', async (req, res, next) => {
-  const { query } = req.query
+// router.get('/users/results', authenticateUser, async (req, res, next) => {
+//   const { query } = req.query
 
-  try {
-    const [ results, itemCount ] = await Promise.all([
-      User.find( { $text: { $search: query } } ).limit(req.query.limit).skip(req.skip).lean().exec(),
-      User.countDocuments( { $text: { $search: query } } )
-    ])
+//   try {
+//     const [ results, itemCount ] = await Promise.all([
+//       User.find( { $text: { $search: query } } ).limit(req.query.limit).skip(req.skip).lean().exec(),
+//       User.countDocuments( { $text: { $search: query } } )
+//     ])
 
-    if (results < 1) return res.status(404).render('error', {
-    statusCode: '404',
-    errorMessage: 'Sorry, we cannot find that!'
-  })
+//     if (results < 1) return res.status(404).render('error', {
+//     statusCode: '404',
+//     errorMessage: 'Sorry, we cannot find that!'
+//   })
 
-    const pageCount = Math.ceil(itemCount / req.query.limit)
+//     const pageCount = Math.ceil(itemCount / req.query.limit)
 
-    res.render('results', {
-      users: results,
-      pageCount,
-      itemCount,
-      pages: paginate.getArrayPages(req)(4, pageCount, req.query.page)
-    })
-  } catch (err) {
-    next(err)
-  }
-})
+//     res.render('results', {
+//       users: results,
+//       pageCount,
+//       itemCount,
+//       pages: paginate.getArrayPages(req)(4, pageCount, req.query.page)
+//     })
+//   } catch (err) {
+//     next(err)
+//   }
+// })
 
 router.get('/signup', (req, res) => res.render('signup'))
 
