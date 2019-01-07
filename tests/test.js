@@ -486,21 +486,6 @@ beforeEach(populateBlogs)
 //   })
 // })
 
-// // GET /profile
-// describe('GET /profile', () => {
-
-//   it('should respond 401, if user has token, but is not in database', (done) => {
-//     const cookie = `token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1YzMxNWJhYWViNjc5ZjdhMWVlNzAzYjEiLCJhZG1pbiI6ZmFsc2UsImlhdCI6MTU0NjczODYwMiwiZXhwIjoxNTQ2ODI1MDAyfQ.ZSDfhUNvJBs2TyknQXbStu77-qpVJFDakm9KBFV7IWA`
-
-//     request(app)
-//       .get('/profile')
-//       .set('Cookie', cookie)
-//       .expect(401)
-//       .end(done)
-//   })
-// })
-
-
 // USER TESTS =====================================================
 console.log(`USER TESTS ***************************************`)
 
@@ -511,6 +496,38 @@ describe('GET /signup', () => {
     request(app)
       .get(`/signup`)
       .expect(200)
+      .end(done)
+  })
+})
+
+// GET /profile
+describe('GET /profile', () => {
+
+  it('should respond 200, if user is logged in', (done) => {
+    const cookie = `token=${tokens[0]}`
+
+    request(app)
+      .get('/profile')
+      .set('Cookie', cookie)
+      .expect(200)
+      .end(done)
+  })
+
+  it('should respond 401, if user is NOT logged in', (done) => {
+
+    request(app)
+      .get('/profile')
+      .expect(401)
+      .end(done)
+  })
+
+  it('should respond 401, if user has token, but is not in database', (done) => {
+    const cookie = `token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1YzMxNWJhYWViNjc5ZjdhMWVlNzAzYjEiLCJhZG1pbiI6ZmFsc2UsImlhdCI6MTU0NjczODYwMiwiZXhwIjoxNTQ2ODI1MDAyfQ.ZSDfhUNvJBs2TyknQXbStu77-qpVJFDakm9KBFV7IWA`
+
+    request(app)
+      .get('/profile')
+      .set('Cookie', cookie)
+      .expect(401)
       .end(done)
   })
 })
@@ -554,9 +571,6 @@ describe('POST /users', () => {
       .send(`email=${ email }`)
       .send(`password=${ password }`)
       .expect(400)
-      .expect((res) => {
-        expect(res.header['set-cookie']).toBeFalsy()
-      })
       .end((err) => {
         if (err) return done(err)
 
@@ -576,9 +590,6 @@ describe('POST /users', () => {
       .send(`email=${ email }`)
       .send(`password=${ password }`)
       .expect(400)
-      .expect((res) => {
-        expect(res.header['set-cookie']).toBeFalsy()
-      })
       .end((err) => {
         if (err) return done(err)
 
@@ -598,9 +609,6 @@ describe('POST /users', () => {
       .send(`email=${ email }`)
       .send(`password=${ password }`)
       .expect(400)
-      .expect((res) => {
-        expect(res.header['set-cookie']).toBeFalsy()
-      })
       .end((err) => {
         if (err) return done(err)
 
@@ -614,6 +622,7 @@ describe('POST /users', () => {
 
 // GET /login
 describe('GET /login', () => {
+
   it('should respond 200', (done) => {
     request(app)
       .get('/login')
@@ -824,3 +833,45 @@ describe('GET /users/edit', () => {
   // })
 // })
 
+
+// DELETE /users/:id
+describe('DELETE /users/delete', () => {
+  
+  it('should return 302, delete the specified user, and redirect to /blogs', (done) => {
+    const cookie = `token=${tokens[0]}`
+
+    request(app)
+      .delete(`/users/delete`)
+      .set('Cookie', cookie)
+      .expect(302)
+      .expect((res) => {
+        expect(res.header.location).toEqual('/blogs')
+        expect(res.header['set-cookie']).toEqual(["token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT"])
+      })
+      .end((err) => {
+        if (err) return done(err)
+
+        User.find().then((users) => {
+          expect(users.length).toBe(1)
+          done()
+        }).catch(err => done(err))
+      })
+  })
+
+  it('should return 401, if user has a token, but is NOT found in the database', (done) => {
+    const cookie = `token=${tokens[2]}`
+
+    request(app)
+      .delete(`/users/delete`)
+      .set('Cookie', cookie)
+      .expect(401)
+      .end((err) => {
+        if (err) return done(err)
+
+        User.find().then((users) => {
+          expect(users.length).toBe(2)
+          done()
+        }).catch(err => done(err))
+      })
+  })
+})

@@ -205,4 +205,23 @@ router.patch('/users/:id', (req, res) => {
   })
 })
 
+// DELETE /users/:id
+router.delete('/users/delete', authenticateUser, (req, res) => {
+  const { token } = req.cookies
+
+  verifyCreator(token).then((id) => {
+    User.findByIdAndDelete(id).then((user) => {
+
+      if (user) {
+        res.clearCookie('token').redirect('/blogs')
+      } else {
+        res.status(404).render('error', {
+          statusCode: '404',
+          errorMessage: 'Sorry, we could not find that user in our database.'
+        })
+      }
+    })
+  })
+})
+
 module.exports = router
