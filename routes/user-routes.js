@@ -62,7 +62,8 @@ router.get('/profile', authenticateUser, (req, res) => {
   })
 })
 
-router.get('/users', async (req, res, next) => {
+// GET /users
+router.get('/users', authenticateUser, async (req, res, next) => {
   
   try {
     const [ results, itemCount ] = await Promise.all([
@@ -179,7 +180,7 @@ router.get('/users/edit', authenticateUser, (req, res) => {
 })
 
 // PATCH /users/:id
-router.patch('/users/:id', (req, res) => {
+router.patch('/users/:id', authenticateUser, (req, res) => {
   const { id } = req.params
   const { email, password, firstName, lastName, jobTitle, avatar } = req.body
 
