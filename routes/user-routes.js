@@ -182,28 +182,56 @@ router.get('/users/edit', authenticateUser, (req, res) => {
 
 // PATCH /users/:id
 router.patch('/users/:id', authenticateUser, (req, res) => {
+  const { token } = req.cookies
   const { id } = req.params
   const { email, password, firstName, lastName, jobTitle, avatar } = req.body
 
-  User.findOne({ email }).then((user) => {
+  User.findById(id).then((user) => {
+    if (!user) {
+      res.status(404).render('error', {
+        statusCode: '404',
+        errorMessage: 'Sorry, that user was not found in our database.'
+      })
+    } else {
+      
+      verifyCreator(token).then((creator) => {
 
-    if (!validatePassword(password)) return res.status(400).send('Password must contain 8-100 characters, with at least one lowercase letter, one uppercase letter, one number, and one special character.')
+        if (creator !== id) {
+          return res.status(401).render('error', {
+            statusCode: '401',
+            errorMessage: `Sorry, it appears that you are not the owner of that account.`
+          })
+        }
 
-    bcrypt.hash(password, saltRounds).then((hash) => {
-      const updatedUser = { email, password: hash, firstName, lastName, jobTitle, avatar }
+        if (!validatePassword(password)) {
+          return res.status(409).render('error', {
+            statusCode: '409',
+            errorMessage: `Password must contain 8-100 characters, with at least one lowercase letter, one uppercase letter, one number, and one special character.`
+          })
+        }  
 
-      User.findByIdAndUpdate(id, updatedUser).then((user) => {
-        if (user) return res.redirect('/profile')
+        bcrypt.hash(password, saltRounds).then((hash) => {
+          const updatedUser = { email, password: hash, firstName, lastName, jobTitle, avatar }
+          const options = { runValidators: true }
 
-        res.status(404).render('error', {
-          statusCode: '404',
-          errorMessage: 'Sorry, that user Id was not found in our database.'
-        })
-      }).catch(err => res.status(409).render('error', {
-        statusCode: '409',
-        errorMessage: `Sorry, that email already exists in our database.`
-      }))
-    }).catch(err => res.status(400).send(err.message))
+          User.findByIdAndUpdate(id, updatedUser, options).then((user) => {
+
+            if (user) return res.status(302).redirect('/profile')
+
+            res.status(404).render('error', {
+              statusCode: '404',
+              errorMessage: 'Sorry, that user Id was not found in our database.'
+            })
+          }).catch(err => res.status(409).render('error', {
+            statusCode: '409',
+            errorMessage: `Sorry, that email already exists in our database.`
+          }))
+        }).catch(err => res.status(409).render('error', {
+          statusCode: '409',
+          errorMessage: err.message
+        }))
+      })
+    }
   })
 })
 

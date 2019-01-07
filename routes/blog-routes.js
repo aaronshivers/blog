@@ -29,9 +29,9 @@ router.post('/blogs', authenticateUser, (req, res) => {
   blog.save().then((blog) => {
     res.status(302).redirect('/blogs')
   }).catch(err => res.status(400).render('error', {
-      statusCode: '400',
-      errorMessage: err.message
-    }))
+    statusCode: '400',
+    errorMessage: err.message
+  }))
 })
 
 router.get('/blogs', async (req, res, next) => {
