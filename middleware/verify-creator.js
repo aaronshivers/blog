@@ -1,7 +1,6 @@
 const express = require('express')
 const jwt = require('jsonwebtoken')
 
-const Blog = require(`../models/blog-model`)
 const secret = process.env.JWT_SECRET
 
 const verifyCreator = (token) => {
