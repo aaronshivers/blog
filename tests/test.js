@@ -258,7 +258,7 @@ describe('GET /blogs/:id/edit', () => {
   })
 })
 
-// PATCH /blogs
+// PATCH /blogs/:id
 describe('PATCH /blogs/:id', () => {
 
   it('should respond 302, redirect to /blogs, and update the specified blog, if user is logged in, and is creator', (done) => {
@@ -863,7 +863,7 @@ describe('PATCH /users/:id', () => {
       })
   })
 
-  it('should return 409, and NOT update if user already exists', (done) => {
+  it('should return 400, and NOT update if user already exists', (done) => {
     const { _id } = users[0]
     const { email, password } = users[1]
     const cookie = `token=${tokens[0]}`
@@ -874,7 +874,7 @@ describe('PATCH /users/:id', () => {
       .type('form')
       .send(`email=${email}`)
       .send(`password=${password}`)
-      .expect(409)
+      .expect(400)
       .end((err) => {
         if (err) return done(err)
 
@@ -886,7 +886,7 @@ describe('PATCH /users/:id', () => {
       })
   })
 
-  it('should return 409, and NOT update a user with an invalid email', (done) => {
+  it('should return 400, and NOT update a user with an invalid email', (done) => {
     const { _id } = users[0]
     const { email, password } = users[3]
     const cookie = `token=${tokens[0]}`
@@ -897,7 +897,7 @@ describe('PATCH /users/:id', () => {
       .type('form')
       .send(`email=${email}`)
       .send(`password=${password}`)
-      .expect(409)
+      .expect(400)
       .end((err) => {
         if (err) return done(err)
 
@@ -920,7 +920,7 @@ describe('PATCH /users/:id', () => {
       .type('form')
       .send(`email=${email}`)
       .send(`password=${password}`)
-      .expect(409)
+      .expect(400)
       .end((err) => {
         if (err) return done(err)
 

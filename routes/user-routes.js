@@ -24,23 +24,28 @@ router.all('*', (req, res, next) => {
 router.post('/users', (req, res) => {
   const email = req.body.email
   const password = req.body.password
-  const newUser = { email, password }
-  const user = new User(newUser)
 
   if (!password || !email) return res.status(400).render('error', {
     statusCode: '400',
     errorMessage: 'You must provide an email, and a password.'
   })
 
-  if (validatePassword(newUser.password)) {
+  validatePassword(password).then((password) => {
+    const newUser = { email, password }
+    const user = new User(newUser)
+
     user.save().then((user) => {
       createToken(user).then((token) => {
-        res.cookie('token', token, cookieExpiration).status(201).redirect(`/profile`)
-      }).catch(err => res.status(500).send(err.message))
+        res
+          .cookie('token', token, cookieExpiration)
+          .status(201)
+          .redirect(`/profile`)
+      })
     }).catch(err => res.status(400).send(err.message))
-  } else {
-    res.status(400).send('Password must contain 8-100 characters, with at least one lowercase letter, one uppercase letter, one number, and one special character.')
-  }
+  }).catch(err => res.status(400).render('error', {
+    statusCode: '400',
+    errorMessage: err.message
+  }))
 })
 
 // GET /profile
@@ -67,13 +72,21 @@ router.get('/users', authenticateAdmin, async (req, res, next) => {
   
   try {
     const [ results, itemCount ] = await Promise.all([
-      User.find({}).sort({ signupDate: -1 }).limit(req.query.limit).skip(req.skip).lean().exec(),
+      User
+        .find({})
+        .sort({ signupDate: -1 })
+        .limit(req.query.limit)
+        .skip(req.skip)
+        .lean()
+        .exec(),
       User.countDocuments({})
     ])
 
     const pageCount = Math.ceil(itemCount / req.query.limit)
 
-    if (Object.keys(results) == 0) return res.status(500).send('Sorry, the database must be empty.')
+    if (Object.keys(results) == 0) {
+      return res.status(500).send('Sorry, the database must be empty.')
+    } 
 
     res.render('users', {
       users: results,
@@ -139,7 +152,10 @@ router.post('/login', (req, res) => {
       bcrypt.compare(password, user.password, (err, hash) => {
         if (hash) {
           createToken(user).then((token) => {
-            res.cookie('token', token, cookieExpiration).status(200).redirect(`/profile`)
+            res
+              .cookie('token', token, cookieExpiration)
+              .status(200)
+              .redirect(`/profile`)
           })
         } else {
           res.status(401).render('error', {
@@ -154,7 +170,8 @@ router.post('/login', (req, res) => {
         errorMessage: 'Please check your login credentials, and try again.'
       })
     }
-  }).catch(err => res.status(401).send('Please check your login credentials, and try again.'))
+  }).catch(err => res.status(401)
+    .send('Please check your login credentials, and try again.'))
 })
 
 // GET /logout
@@ -199,35 +216,43 @@ router.patch('/users/:id', authenticateUser, (req, res) => {
         if (creator !== id) {
           return res.status(401).render('error', {
             statusCode: '401',
-            errorMessage: `Sorry, it appears that you are not the owner of that account.`
+            errorMessage: `Sorry, it appears that you 
+            are not the owner of that account.`
           })
         }
 
-        if (!validatePassword(password)) {
-          return res.status(409).render('error', {
-            statusCode: '409',
-            errorMessage: `Password must contain 8-100 characters, with at least one lowercase letter, one uppercase letter, one number, and one special character.`
-          })
-        }  
+        validatePassword(password).then((password) => {
 
-        bcrypt.hash(password, saltRounds).then((hash) => {
-          const updatedUser = { email, password: hash, firstName, lastName, jobTitle, avatar }
-          const options = { runValidators: true }
+          bcrypt.hash(password, saltRounds).then((hash) => {
+            const updatedUser = {
+              email,
+              password: hash,
+              firstName,
+              lastName,
+              jobTitle,
+              avatar
+            }
+            const options = { runValidators: true }
 
-          User.findByIdAndUpdate(id, updatedUser, options).then((user) => {
+            User.findByIdAndUpdate(id, updatedUser, options).then((user) => {
 
-            if (user) return res.status(302).redirect('/profile')
+              if (user) return res.status(302).redirect('/profile')
 
-            res.status(404).render('error', {
-              statusCode: '404',
-              errorMessage: 'Sorry, that user Id was not found in our database.'
-            })
-          }).catch(err => res.status(409).render('error', {
-            statusCode: '409',
-            errorMessage: `Sorry, that email already exists in our database.`
+              res.status(404).render('error', {
+                statusCode: '404',
+                errorMessage: `Sorry, that user Id 
+                was not found in our database.`
+              })
+            }).catch(err => res.status(400).render('error', {
+              statusCode: '400',
+              errorMessage: `Sorry, that email already exists in our database.`
+            }))
+          }).catch(err => res.status(400).render('error', {
+            statusCode: '400',
+            errorMessage: err.message
           }))
-        }).catch(err => res.status(409).render('error', {
-          statusCode: '409',
+        }).catch(err => res.status(400).render('error', {
+          statusCode: '400',
           errorMessage: err.message
         }))
       })

@@ -7,9 +7,7 @@ const createToken = (user) => {
 
   return new Promise((resolve, reject) => {
     jwt.sign(payload, secret, options, (err, token) => {
-      if (err) return reject(err)
-
-      return resolve(token)
+      err ? reject(err) : resolve(token)
     })
   })
 }
