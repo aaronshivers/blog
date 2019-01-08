@@ -73,13 +73,18 @@ router.get('/blogs/:id/view', (req, res) => {
 
 // GET /blogs/search
 router.get('/blogs/search', async (req, res, next) => {
-  const { find } = req.query
+  const { term } = req.query
 
   try {
     const [ results, itemCount ] = await Promise.all([
-      Blog.find( { $text: { $search: find } } ).populate('creator').limit(req.query.limit).skip(req.skip).lean().exec(),
-      Blog.countDocuments( { $text: { $search: find } } )
+      Blog.find( { $text: { $search: term } } ).populate('creator').limit(req.query.limit).skip(req.skip).lean().exec(),
+      Blog.countDocuments( { $text: { $search: term } } )
     ])
+
+    if (results < 1) return res.status(404).render('error', {
+      statusCode: '404',
+      errorMessage: 'Sorry, we cannot find that!'
+    })
 
     const pageCount = Math.ceil(itemCount / req.query.limit)
 

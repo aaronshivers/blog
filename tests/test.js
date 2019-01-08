@@ -51,7 +51,7 @@ describe('GET /admin', () => {
       .expect(401)
       .end(done)
   })
-  
+
   it('should respond 401, if user is NOT logged in', (done) => {
 
     request(app)
@@ -516,6 +516,31 @@ describe('DELETE /blogs/:id', () => {
       })
   })
 })
+
+// GET /blogs/search
+describe('GET /blogs/search', () => {
+
+  it('should respond 200', (done) => {
+    const term = blogs[0].title
+
+    request(app)
+      .get('/blogs/search')
+      .expect(200)
+      .query({ term: term })
+      .end(done)
+  })
+
+  it(`should respond 404, search term isn't found`, (done) => {
+    const term = 'somethingthatsprobablynotinthedatabase'
+
+    request(app)
+      .get('/blogs/search')
+      .expect(404)
+      .query({ term: term })
+      .end(done)
+  })
+})
+
 
 // USER TESTS =====================================================
 
@@ -1005,5 +1030,55 @@ describe('DELETE /users/delete', () => {
           done()
         }).catch(err => done(err))
       })
+  })
+})
+
+// GET /users/search
+describe('GET /users/search', () => {
+
+  it('should respond 200, if user is logged in, and is admin', (done) => {
+    const cookie = `token=${tokens[1]}`
+    const term = users[0].email
+
+    request(app)
+      .get('/users/search')
+      .set('Cookie', cookie)
+      .expect(200)
+      .query({ term: term })
+      .end(done)
+  })
+
+  it('should respond 401, if user is logged in, and is NOT admin', (done) => {
+    const cookie = `token=${tokens[0]}`
+    const term = users[0].email
+
+    request(app)
+      .get('/users/search')
+      .set('Cookie', cookie)
+      .expect(401)
+      .query({ term: term })
+      .end(done)
+  })
+  
+  it('should respond 401, if user is NOT logged in', (done) => {
+    const term = users[0].email
+
+    request(app)
+      .get('/users/search')
+      .expect(401)
+      .query({ term: term })
+      .end(done)
+  })
+
+  it(`should respond 404, search term isn't found`, (done) => {
+    const cookie = `token=${tokens[1]}`
+    const term = 'somethingthatsprobablynotinthedatabase'
+
+    request(app)
+      .get('/users/search')
+      .set('Cookie', cookie)
+      .expect(404)
+      .query({ term: term })
+      .end(done)
   })
 })
