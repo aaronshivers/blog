@@ -965,6 +965,37 @@ describe('PATCH /users/:id', () => {
         }).catch(err => done(err))
       })
   })
+
+  it('should return 302, and NOT allow user to change Admin field', (done) => {
+    const { _id } = users[0]
+    const cookie = `token=${tokens[0]}`
+    const { email, password } = users[0]
+    const { admin } = { 'admin' : true }
+
+    request(app)
+      .patch(`/users/${ _id }`)
+      .set('Cookie', cookie)
+      .send(`email=${email}`)
+      .send(`password=${password}`)
+      .send(`admin=${admin}`)
+      .expect(302)
+      .expect((res) => {
+        expect(res.header.location).toEqual('/profile')
+      })
+      .end((err) => {
+        if (err) return done(err)
+
+        User.findById(_id).then((user) => {
+
+          expect(user).toBeTruthy()
+          expect(user._id).toEqual(_id)
+          expect(user.email).toEqual(email.toLowerCase())
+          expect(user.password).not.toEqual(password)
+          expect(user.admin).not.toEqual(admin)
+          done()
+        }).catch(err => done(err))
+      })
+  })
 })
 
 
