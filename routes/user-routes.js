@@ -6,10 +6,9 @@ const bcrypt = require('bcrypt')
 
 const User = require('../models/user-model')
 const validatePassword = require('../middleware/validate-password')
-const createToken = require('../middleware/create-token')
 const authenticateUser = require('../middleware/authenticate-user')
 const authenticateAdmin = require('../middleware/authenticate-admin')
-const verifyCreator = require('../middleware/verify-creator')
+const { createToken, verifyToken } = require('../middleware/handle-tokens')
 
 const cookieExpiration = { expires: new Date(Date.now() + 86400000) }
 const saltRounds = 10
@@ -181,7 +180,7 @@ router.get('/logout', (req, res) => {
 router.get('/users/edit', authenticateUser, (req, res) => {
   const { token } = req.cookies
 
-  verifyCreator(token).then((id) => {
+  verifyToken(token).then((id) => {
     User.findById(id).then((user) => {
       if (!user) {
         res.status(404).render('error', {
@@ -209,7 +208,7 @@ router.patch('/users/:id', authenticateUser, (req, res) => {
       })
     } else {
       
-      verifyCreator(token).then((creator) => {
+      verifyToken(token).then((creator) => {
 
         if (creator !== id) {
           return res.status(401).render('error', {
@@ -262,7 +261,7 @@ router.patch('/users/:id', authenticateUser, (req, res) => {
 router.delete('/users/delete', authenticateUser, (req, res) => {
   const { token } = req.cookies
 
-  verifyCreator(token).then((id) => {
+  verifyToken(token).then((id) => {
     User.findByIdAndDelete(id).then((user) => {
 
       if (user) {

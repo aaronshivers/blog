@@ -3,7 +3,7 @@ const { ObjectId } = require('mongodb')
 
 const User = require(`../models/user-model`)
 const Blog = require(`../models/blog-model`)
-const createToken = require('../middleware/create-token')
+const { createToken } = require('../middleware/handle-tokens')
 
 const users = [{
   _id: new ObjectId(),

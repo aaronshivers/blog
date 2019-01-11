@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken')
 
 const Blog = require('../models/blog-model')
 const authenticateUser = require('../middleware/authenticate-user')
-const verifyCreator = require('../middleware/verify-creator')
+const { verifyToken } = require('../middleware/handle-tokens')
 
 // Required to prevent getting infinite results during pagination
 router.all('*', (req, res, next) => {
@@ -20,18 +20,18 @@ router.get('/blogs/new', authenticateUser, (req, res) => {
 router.post('/blogs', authenticateUser, (req, res) => {
   const { title, body, image } = req.body
   const token = req.cookies.token
-  const secret = process.env.JWT_SECRET
-  const decoded = jwt.verify(token, secret)
-  const creator = decoded._id
-  const newBlog = { title, body, image, creator }
-  const blog = new Blog(newBlog)
 
-  blog.save().then((blog) => {
-    res.status(302).redirect('/blogs')
-  }).catch(err => res.status(400).render('error', {
-    statusCode: '400',
-    errorMessage: err.message
-  }))
+  verifyToken(token).then((creator) => {
+    const newBlog = { title, body, image, creator }
+    const blog = new Blog(newBlog)
+    
+    blog.save().then((blog) => {
+      res.status(302).redirect('/blogs')
+    }).catch(err => res.status(400).render('error', {
+      statusCode: '400',
+      errorMessage: err.message
+    }))
+  })
 })
 
 router.get('/blogs', async (req, res, next) => {
@@ -103,7 +103,7 @@ router.get('/blogs/search', async (req, res, next) => {
 router.get('/blogs/list', authenticateUser, async (req, res, next) => {
   const { token } = req.cookies
 
-  verifyCreator(token).then((creator) => {
+  verifyToken(token).then((creator) => {
 
     Blog.find({ creator }).sort({ date: -1 }).then((blogs) => {
       res.render('blog-list', { blogs })
@@ -116,7 +116,7 @@ router.get('/blogs/:id/edit', authenticateUser, (req, res) => {
   const { token } = req.cookies
   const _id = req.params.id
 
-  verifyCreator(token).then((creator) => {
+  verifyToken(token).then((creator) => {
     const conditions = { _id, creator }
 
     Blog.findOne(conditions).then((blog) => {
@@ -137,7 +137,7 @@ router.patch('/blogs/:id', authenticateUser, (req, res) => {
   const update = { title, body, image }
   const options = { runValidators: true }
 
-  verifyCreator(token, _id).then((creator) => {
+  verifyToken(token, _id).then((creator) => {
     const conditions = { _id, creator }
 
     Blog.findOneAndUpdate(conditions, update, options).then((blog) => {
@@ -162,7 +162,7 @@ router.delete('/blogs/:id', authenticateUser, (req, res) => {
   const { token } = req.cookies
   const _id = req.params.id
   
-  verifyCreator(token).then((creator) => {
+  verifyToken(token).then((creator) => {
     const conditions = { _id, creator }
 
     Blog.findOneAndDelete(conditions).then((blog) => {

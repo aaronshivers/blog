@@ -12,4 +12,17 @@ const createToken = (user) => {
   })
 }
 
-module.exports = createToken
+const verifyToken = (token) => {
+  const secret = process.env.JWT_SECRET
+  
+  return new Promise((resolve, reject) => {
+    jwt.verify(token, secret, (err, decoded) => {
+      err ? reject(err) : resolve(decoded._id)
+    })
+  })
+}
+
+module.exports = {
+  createToken,
+  verifyToken
+}
