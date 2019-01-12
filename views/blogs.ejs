@@ -5,11 +5,11 @@
   <h1 class="text-center">Blogs List</h1>
 
   <% blogs.forEach((blog) => { %>
-  <div class="card mb-3">
+  <div class="card mb-3 col-lg mx-auto">
 
     <a href="/blogs/<%= blog._id %>/view">
 
-      <img src="<%= blog.image %>" class="card-img-top">
+      <img src="<%= blog.image %>" class="card-img-top mt-3">
       
       <div class="card-body">
 

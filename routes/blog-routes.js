@@ -1,7 +1,6 @@
 const express = require('express')
 const router = express.Router()
 const paginate = require('express-paginate')
-const jwt = require('jsonwebtoken')
 
 const Blog = require('../models/blog-model')
 const authenticateUser = require('../middleware/authenticate-user')

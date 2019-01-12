@@ -23,7 +23,7 @@ const blogSchema = new Schema({
     required: true,
     trim: true,
     minlength: 1,
-    maxlength: 50
+    maxlength: 100
   },
   date: {
     type: Date,
