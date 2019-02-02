@@ -2,19 +2,20 @@ const bcrypt = require('bcrypt')
 
 const hashPassword = (userSchema) => {
 
-  userSchema.pre('save', function(next) {
+  userSchema.pre('save', async function(next) {
     const user = this
 
     if (!user.isModified('password')) return next()
 
     const saltingRounds = 10
 
-    bcrypt.hash(user.password, saltingRounds, (err, hash) => {
-      if (err) return next(err)
-      
+    try {
+      const hash = await bcrypt.hash(user.password, saltingRounds)
       user.password = hash
       next()
-    })
+    } catch (error) {
+      throw new Error (error)
+    }
   })
 }
 

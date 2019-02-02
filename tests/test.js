@@ -795,7 +795,7 @@ describe('GET /logout', () => {
 // GET /users/:id/edit
 describe('GET /users/edit', () => {
 
-  it('should respond 200, and GET /blogs/:id/edit, if user is logged in.', (done) => {
+  it('should respond 200, and GET /blogs/edit, if user is logged in.', (done) => {
     const cookie = `token=${tokens[0]}`
     const { _id } = users[0]._id
 

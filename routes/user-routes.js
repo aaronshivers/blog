@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
 
 const User = require('../models/user-model')
-const validatePassword = require('../middleware/validate-password')
+const { validatePassword } = require('../middleware/validate-password')
 const authenticateUser = require('../middleware/authenticate-user')
 const authenticateAdmin = require('../middleware/authenticate-admin')
 const { createToken, verifyToken } = require('../middleware/handle-tokens')
@@ -20,7 +20,7 @@ router.all('*', (req, res, next) => {
 })
 
 // POST /users
-router.post('/users', (req, res) => {
+router.post('/users', async (req, res) => {
   const email = req.body.email
   const password = req.body.password
 
@@ -29,41 +29,41 @@ router.post('/users', (req, res) => {
     errorMessage: 'You must provide an email, and a password.'
   })
 
-  validatePassword(password).then((password) => {
-    const newUser = { email, password }
-    const user = new User(newUser)
+  try {
+    const validatedPassword = await validatePassword(password)
+    const newUser = { email, password: validatedPassword }
+    const user = await new User(newUser)
+    const savedUser = await user.save()
+    const token = await createToken(savedUser)
 
-    user.save().then((user) => {
-      createToken(user).then((token) => {
-        res
-          .cookie('token', token, cookieExpiration)
-          .status(201)
-          .redirect(`/profile`)
-      })
-    }).catch(err => res.status(400).send(err.message))
-  }).catch(err => res.status(400).render('error', {
-    statusCode: '400',
-    errorMessage: err.message
-  }))
+    res
+      .cookie('token', token, cookieExpiration)
+      .status(201)
+      .redirect(`/profile`)
+  } catch (error) {
+    res.status(400).render('error', {
+      statusCode: '400',
+      errorMessage: error
+    })
+  }
 })
 
 // GET /profile
-router.get('/profile', authenticateUser, (req, res) => {
+router.get('/profile', authenticateUser, async (req, res) => {
   const token = req.cookies.token
   const secret = process.env.JWT_SECRET
   const decoded = jwt.verify(token, secret)
   const { _id } = decoded
 
-  User.findById(_id).then((user) => {
-    if (user) {
-      res.render('profile', { user })
-    } else {
-      res.status(401).render('error', {
-        statusCode: '401',
-        errorMessage: 'Sorry, you must be logged in to view this page.'
-      })
-    }
-  })
+  const user = await User.findById(_id)
+  if (user) {
+    res.render('profile', { user })
+  } else {
+    res.status(401).render('error', {
+      statusCode: '401',
+      errorMessage: 'Sorry, you must be logged in to view this page.'
+    })
+  }
 })
 
 // GET /users
@@ -98,12 +98,16 @@ router.get('/users', authenticateAdmin, async (req, res, next) => {
   }
 })
 
-router.get('/users/:id/view', authenticateUser, (req, res) => {
+// GET /users/:id/view
+router.get('/users/:id/view', authenticateUser, async (req, res) => {
   const { id } = req.params
 
-  User.findById(id).then((user) => {
+  try {
+    const user = await User.findById(id)
     res.render('view-user', { user })
-  })
+  } catch (error) {
+    throw new Error (error)
+  }
 })
 
 // GET /users/search
@@ -141,19 +145,27 @@ router.get('/signup', (req, res) => res.render('signup'))
 router.get('/login', (req, res) => res.render('login'))
 
 // POST /login
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
   const { email, password } = req.body
 
-  User.findOne({ email }).then((user) => {
+  try {
+    const user = await User.findOne({ email })
+
     if (user) {
-      bcrypt.compare(password, user.password, (err, hash) => {
+      bcrypt.compare(password, user.password, async (err, hash) => {
         if (hash) {
-          createToken(user).then((token) => {
+          try {
+            const token = await createToken(user)
             res
               .cookie('token', token, cookieExpiration)
               .status(200)
               .redirect(`/profile`)
-          })
+          } catch (error) {
+            res.status(401).render('error', {
+              statusCode: '401',
+              errorMessage: 'Please check your login credentials, and try again.'
+            })
+          }
         } else {
           res.status(401).render('error', {
             statusCode: '401',
@@ -167,8 +179,9 @@ router.post('/login', (req, res) => {
         errorMessage: 'Please check your login credentials, and try again.'
       })
     }
-  }).catch(err => res.status(401)
-    .send('Please check your login credentials, and try again.'))
+  } catch (error) {
+    res.status(401).send('Please check your login credentials, and try again.')
+  }
 })
 
 // GET /logout
@@ -176,104 +189,64 @@ router.get('/logout', (req, res) => {
   res.clearCookie('token').redirect(`/blogs`)
 })
 
-// GET /users/:id/edit
-router.get('/users/edit', authenticateUser, (req, res) => {
+// GET /users/edit
+router.get('/users/edit', authenticateUser, async (req, res) => {
   const { token } = req.cookies
 
-  verifyToken(token).then((id) => {
-    User.findById(id).then((user) => {
-      if (!user) {
-        res.status(404).render('error', {
-          statusCode: '404',
-          errorMessage: `Sorry, we can't find that user in our database.`
-        })
-      } else {
-        res.render('edit-user', { user })
-      }
-    })
-  })
+  try {
+    const id = await verifyToken(token)
+    const user = await User.findById(id)
+    res.render('edit-user', { user })
+  } catch (error) {
+    throw new Error(error)
+  }
 })
 
 // PATCH /users/:id
-router.patch('/users/:id', authenticateUser, (req, res) => {
+router.patch('/users/:id', authenticateUser, async (req, res) => {
   const { token } = req.cookies
   const { id } = req.params
   const { email, password, firstName, lastName, jobTitle, avatar } = req.body
 
-  User.findById(id).then((user) => {
-    if (!user) {
-      res.status(404).render('error', {
-        statusCode: '404',
-        errorMessage: 'Sorry, that user was not found in our database.'
-      })
-    } else {
-      
-      verifyToken(token).then((creator) => {
-
-        if (creator !== id) {
-          return res.status(401).render('error', {
-            statusCode: '401',
-            errorMessage: `Sorry, it appears that you 
-            are not the owner of that account.`
-          })
-        }
-
-        validatePassword(password).then((password) => {
-
-          bcrypt.hash(password, saltRounds).then((hash) => {
-            const updatedUser = {
-              email,
-              password: hash,
-              firstName,
-              lastName,
-              jobTitle,
-              avatar
-            }
-            const options = { runValidators: true }
-
-            User.findByIdAndUpdate(id, updatedUser, options).then((user) => {
-
-              if (user) return res.status(302).redirect('/profile')
-
-              res.status(404).render('error', {
-                statusCode: '404',
-                errorMessage: `Sorry, that user Id 
-                was not found in our database.`
-              })
-            }).catch(err => res.status(400).render('error', {
-              statusCode: '400',
-              errorMessage: `Sorry, that email already exists in our database.`
-            }))
-          }).catch(err => res.status(400).render('error', {
-            statusCode: '400',
-            errorMessage: err.message
-          }))
-        }).catch(err => res.status(400).render('error', {
-          statusCode: '400',
-          errorMessage: err.message
-        }))
-      })
+  try {
+    const user = await User.findById(id)
+    if (!user) return res.status(404).render('error', { statusCode: '404', errorMessage: 'Sorry, that user was not found in our database.' })
+    const creator = await verifyToken(token)
+    if (creator !== id) return res.status(401).render('error', { statusCode: '401', errorMessage: `Sorry, it appears that you are not the owner of that account.` })
+    const validatedPassword = await validatePassword(password)
+    const hash = await bcrypt.hash(validatedPassword, saltRounds)
+    const update = {
+      email,
+      password: hash,
+      firstName,
+      lastName,
+      jobTitle,
+      avatar
     }
-  })
+    const options = { runValidators: true }
+    const updatedUser = await User.findByIdAndUpdate(id, update, options)
+    
+    if (!updatedUser) return res.status(404).render('error', { statusCode: '404', errorMessage: `Sorry, that user Id was not found in our database.` })
+    res.status(302).redirect('/profile')
+  } catch (error) {
+    res.status(400).render('error', {
+      statusCode: '400',
+      errorMessage: error
+    })
+  }
 })
 
-// DELETE /users/:id
-router.delete('/users/delete', authenticateUser, (req, res) => {
+// DELETE /users/delete
+router.delete('/users/delete', authenticateUser, async (req, res) => {
   const { token } = req.cookies
 
-  verifyToken(token).then((id) => {
-    User.findByIdAndDelete(id).then((user) => {
-
-      if (user) {
-        res.clearCookie('token').redirect('/blogs')
-      } else {
-        res.status(404).render('error', {
-          statusCode: '404',
-          errorMessage: 'Sorry, we could not find that user in our database.'
-        })
-      }
-    })
-  })
+  try {
+    const id = await verifyToken(token)
+    const user = await User.findByIdAndDelete(id)
+    res.clearCookie('token').redirect('/blogs')
+  } catch (error) {
+    return res.status(404).render('error', { statusCode: '404', errorMessage: 'Sorry, we could not find that user in our database.' })
+  }
 })
 
 module.exports = router

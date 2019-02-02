@@ -2,35 +2,17 @@ const jwt = require('jsonwebtoken')
 
 const User = require(`../models/user-model`)
 
-const authenticateUser = (req, res, next) => {
+const authenticateUser = async (req, res, next) => {
   const token = req.cookies.token
   const secret = process.env.JWT_SECRET
+  const handleError = (error) => res.status(401).render('error', { errorMessage: error })
 
-  if (token) {
-    jwt.verify(token, secret, (err, decoded) => {
-      if (err) {
-        res.status(401).render('error', {
-          statusCode: '401',
-          errorMessage: err.message
-        })
-      } else {
-        User.findById(decoded._id).then((user) => {
-          if (user) {
-            next()
-          } else {
-            res.status(401).render('error', {
-              statusCode: '401',
-              errorMessage: `Sorry, we couldn't find your account in our database.`
-            })
-          }
-        })
-      }    
-    })
-  } else {
-    res.status(401).render('error', {
-      statusCode: '401',
-      errorMessage: 'You must login to view this page.'
-    })
+  try {
+    const decoded = await jwt.verify(token, secret)
+    const user = await User.findById(decoded._id)
+    user ? next() : handleError(error)
+  } catch (error) {
+    handleError(error)
   }
 }
 

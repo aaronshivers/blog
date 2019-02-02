@@ -12,27 +12,31 @@ router.all('*', (req, res, next) => {
   next()
 })
 
+// GET /blogs/new
 router.get('/blogs/new', authenticateUser, (req, res) => {
   res.render('new-blog')
 })
 
-router.post('/blogs', authenticateUser, (req, res) => {
+// POST /blogs
+router.post('/blogs', authenticateUser, async (req, res) => {
   const { title, body, image } = req.body
   const token = req.cookies.token
 
-  verifyToken(token).then((creator) => {
+  try {
+    const creator = await verifyToken(token)
     const newBlog = { title, body, image, creator }
-    const blog = new Blog(newBlog)
-    
-    blog.save().then((blog) => {
-      res.status(302).redirect('/blogs')
-    }).catch(err => res.status(400).render('error', {
+    const blog = await new Blog(newBlog)
+    await blog.save()
+    res.status(302).redirect('/blogs')
+  } catch (error) {
+    res.status(400).render('error', {
       statusCode: '400',
-      errorMessage: err.message
-    }))
-  })
+      errorMessage: error
+    })
+  }
 })
 
+// GET /blogs
 router.get('/blogs', async (req, res, next) => {
 
   try {
@@ -54,20 +58,24 @@ router.get('/blogs', async (req, res, next) => {
   }
 })
 
-router.get('/blogs/:id/view', (req, res) => {
+// GET /blogs/:id/view
+router.get('/blogs/:id/view', async (req, res) => {
   const { id } = req.params
 
-  Blog.findById(id).populate('creator').then((blog) => {
+  try {
+    const blog = await Blog.findById(id).populate('creator')
     if (blog) return res.render('view-blog', { blog })
   
     res.status(404).render('error', {
       statusCode: '404',
       errorMessage: `Sorry, we can't find a blog with that Id in our database.`
     })
-  }).catch(err => res.status(400).render('error', {
+  } catch (error) {
+    res.status(400).render('error', {
       statusCode: '400',
       errorMessage: `Sorry, That seems to be an invalid ObjectId.`
-    }))
+    })
+  }
 })
 
 // GET /blogs/search
@@ -98,86 +106,94 @@ router.get('/blogs/search', async (req, res, next) => {
   }
 })
 
-// GET /blogs/:creator/list
+// GET /blogs/list
 router.get('/blogs/list', authenticateUser, async (req, res, next) => {
   const { token } = req.cookies
 
-  verifyToken(token).then((creator) => {
+  try {
+    const creator = await verifyToken(token)
+    const blogs = await Blog.find({ creator }).sort({ date: -1 })
 
-    Blog.find({ creator }).sort({ date: -1 }).then((blogs) => {
-      res.render('blog-list', { blogs })
-    })
-  })
+    res.render('blog-list', { blogs })
+  } catch (error) {
+    throw new Error (error)
+  }
 })
 
 // GET /blogs/:id/edit
-router.get('/blogs/:id/edit', authenticateUser, (req, res) => {
+router.get('/blogs/:id/edit', authenticateUser, async (req, res) => {
   const { token } = req.cookies
   const _id = req.params.id
 
-  verifyToken(token).then((creator) => {
+  try {
+    const creator = await verifyToken(token)
     const conditions = { _id, creator }
+    const blog = await Blog.findOne(conditions)
 
-    Blog.findOne(conditions).then((blog) => {
-      if (!blog) return res.status(401).render('error', {
-        statusCode: '401',
-        errorMessage: `Sorry, it doesn't look like you created that blog.`
-      })
-      res.render('edit-blog', { blog })
+    if (!blog) return res.status(401).render('error', {
+      statusCode: '401',
+      errorMessage: `Sorry, it doesn't look like you created that blog.`
     })
-  })
+    res.render('edit-blog', { blog })
+  } catch (error) {
+    throw new Error (error)
+  }
 })
 
 // PATCH /blogs/:id
-router.patch('/blogs/:id', authenticateUser, (req, res) => {
+router.patch('/blogs/:id', authenticateUser, async (req, res) => {
   const { token } = req.cookies
   const _id = req.params.id
   const { title, body, image } = req.body
   const update = { title, body, image }
   const options = { runValidators: true }
 
-  verifyToken(token, _id).then((creator) => {
+  try {
+    const creator = await verifyToken(token, _id)
     const conditions = { _id, creator }
+    const blog = await Blog.findOneAndUpdate(conditions, update, options)
 
-    Blog.findOneAndUpdate(conditions, update, options).then((blog) => {
+    if (!blog) {
+      res.status(404).render('error', {
+        statusCode: '404',
+        errorMessage: `Sorry, we couldn't find that blog in our database.`
+      })
+    } else {
+      res.status(302).redirect('/blogs')
+    }
 
-      if (!blog) {
-        res.status(404).render('error', {
-          statusCode: '404',
-          errorMessage: `Sorry, we couldn't find that blog in our database.`
-        })
-      } else {
-        res.status(302).redirect('/blogs')
-      }
-    }).catch(err => res.status(400).render('error', {
+  } catch (error) {
+    res.status(400).render('error', {
       statusCode: '400',
-      errorMessage: err.message
-    }))
-  }).catch(err => res.send('dookie'))
+      errorMessage: error
+    })
+  }
 })
 
 // DELETE /blogs/:id
-router.delete('/blogs/:id', authenticateUser, (req, res) => {
+router.delete('/blogs/:id', authenticateUser, async (req, res) => {
   const { token } = req.cookies
   const _id = req.params.id
-  
-  verifyToken(token).then((creator) => {
-    const conditions = { _id, creator }
 
-    Blog.findOneAndDelete(conditions).then((blog) => {
-      if (!blog) {
-        res.status(404).render('error', {
-          statusCode: '404',
-          errorMessage: `Sorry, we couldn't find that blog in our database.`
-        })
-      } else {
-        res.status(302).redirect('/blogs')
-      }
-    }).catch(err => res.status(400).render('error', {
+  try {
+    const creator = await verifyToken(token)
+    const conditions = { _id, creator }
+    const blog = await Blog.findOneAndDelete(conditions)
+
+    if (!blog) {
+      res.status(404).render('error', {
+        statusCode: '404',
+        errorMessage: `Sorry, we couldn't find that blog in our database.`
+      })
+    } else {
+      res.status(302).redirect('/blogs')
+    }
+  } catch (error) {
+    res.status(400).render('error', {
       statusCode: '400',
-      errorMessage: err.message
-    }))
-  })
+      errorMessage: error
+    })
+  }
 })
 
 module.exports = router
