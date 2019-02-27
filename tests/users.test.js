@@ -17,47 +17,43 @@ beforeEach(populateUsers)
 beforeEach(populateBlogs)
 
 // GET /
-describe('GET /', () => {
-  it('should respond 302, and redirect to /blogs', (done) => {
-    request(app)
+describe('GET /', async () => {
+  it('should respond 302, and redirect to /blogs', async () => {
+    await request(app)
       .get('/')
       .expect(302)
       .expect((res) => {
         expect(res.header.location).toEqual('/blogs')
       })
-      .end(done)
   })
 })
 
 // GET /admin
-describe('GET /admin', () => {
+describe('GET /admin', async () => {
 
-  it('should respond 200, if user is logged in, and is admin', (done) => {
+  it('should respond 200, if user is logged in, and is admin', async () => {
     const cookie = `token=${tokens[1]}`
 
-    request(app)
+    await request(app)
       .get('/admin')
       .set('Cookie', cookie)
       .expect(200)
-      .end(done)
   })
 
-  it('should respond 401, if user is logged in, and is NOT admin', (done) => {
+  it('should respond 401, if user is logged in, and is NOT admin', async () => {
     const cookie = `token=${tokens[0]}`
 
-    request(app)
+    await request(app)
       .get('/admin')
       .set('Cookie', cookie)
       .expect(401)
-      .end(done)
   })
 
-  it('should respond 401, if user is NOT logged in', (done) => {
+  it('should respond 401, if user is NOT logged in', async () => {
 
-    request(app)
+    await request(app)
       .get('/admin')
       .expect(401)
-      .end(done)
   })
 })
 
@@ -66,55 +62,51 @@ describe('GET /admin', () => {
 // USER TESTS =====================================================
 
 // GET /users/new
-describe('GET /signup', () => {
+describe('GET /signup', async () => {
 
-  it('should return 200', (done) => {
-    request(app)
+  it('should return 200', async () => {
+    await request(app)
       .get(`/signup`)
       .expect(200)
-      .end(done)
   })
 })
 
 // GET /profile
-describe('GET /profile', () => {
+describe('GET /profile', async () => {
 
-  it('should respond 200, if user is logged in', (done) => {
+  it('should respond 200, if user is logged in', async () => {
     const cookie = `token=${tokens[0]}`
 
-    request(app)
+    await request(app)
       .get('/profile')
       .set('Cookie', cookie)
       .expect(200)
-      .end(done)
   })
 
-  it('should respond 401, if user is NOT logged in', (done) => {
+  it('should respond 401, if user is NOT logged in', async () => {
 
-    request(app)
+    await request(app)
       .get('/profile')
       .expect(401)
-      .end(done)
   })
 
-  it('should respond 401, if user has token, but is not in database', (done) => {
+  it('should respond 401, if user has token, but is not in database', async () => {
     const cookie = `token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1YzMxNWJhYWViNjc5ZjdhMWVlNzAzYjEiLCJhZG1pbiI6ZmFsc2UsImlhdCI6MTU0NjczODYwMiwiZXhwIjoxNTQ2ODI1MDAyfQ.ZSDfhUNvJBs2TyknQXbStu77-qpVJFDakm9KBFV7IWA`
 
-    request(app)
+    await request(app)
       .get('/profile')
       .set('Cookie', cookie)
       .expect(401)
-      .end(done)
   })
 })
 
 // POST /users
-describe('POST /users', () => {
+describe('POST /users', async () => {
 
-  it('should return 302, create a new user, and redirect to /profile', (done) => {
+  it('should return 302, create a new user, and redirect to /profile', async () => {
     const { email, password } = users[2]
 
-    request(app)
+    await request(app)
       .post('/users')
       .send(`email=${ email }`)
       .send(`password=${ password }`)
@@ -123,147 +115,119 @@ describe('POST /users', () => {
         expect(res.header.location).toEqual('/profile')
         expect(res.header).toHaveProperty('set-cookie')
       })
-      .end((err) => {
-        if (err) {
-          return done(err)
-        } else {
-          User.findOne({ email }).then((user) => {
-            expect(user).toBeTruthy()
-            expect(user.email).toEqual(email.toLowerCase())
-            expect(user.password).not.toEqual(password)
-            done()
-          }).catch(err => done(err))
-        }
-      })
+
+      const foundUser = await User.findOne({ email })
+      expect(foundUser).toBeTruthy()
+      expect(foundUser.email).toEqual(email.toLowerCase())
+      expect(foundUser.password).not.toEqual(password)
   })
 
-  it('should return 400, and NOT create a duplicate user', (done) => {
+  it('should return 400, and NOT create a duplicate user', async () => {
     const { email, password } = users[0]
 
-    request(app)
+    await request(app)
       .post('/users')
       .send(`email=${ email }`)
       .send(`password=${ password }`)
       .expect(400)
-      .end((err) => {
-        if (err) return done(err)
 
-        User.find().then((users) => {
-          expect(users.length).toBe(2)
-          done()
-        }).catch(err => done(err))
-      })
+    const foundUsers = await User.find()
+    expect(foundUsers.length).toBe(2)
   })
 
-  it('should return 400, and NOT create a user with an invalid email', (done) => {
+  it('should return 400, and NOT create a user with an invalid email', async () => {
     const { email, password } = users[3]
 
-    request(app)
+    await request(app)
       .post('/users')
       .send(`email=${ email }`)
       .send(`password=${ password }`)
       .expect(400)
-      .end((err) => {
-        if (err) return done(err)
 
-        User.findOne({ email }).then((user) => {
-          expect(user).toBeFalsy()
-          done()
-        }).catch(err => done(err))
-      })
+    const foundUser = await User.findOne({ email })
+    expect(foundUser).toBeFalsy()
   })
 
-  it('should return 400, and NOT create a user with an invalid password', (done) => {
+  it('should return 400, and NOT create a user with an invalid password', async () => {
     const { email, password } = users[4]
 
-    request(app)
+    await request(app)
       .post('/users')
       .send(`email=${ email }`)
       .send(`password=${ password }`)
       .expect(400)
-      .end((err) => {
-        if (err) return done(err)
 
-        User.findOne({ email }).then((user) => {
-          expect(user).toBeFalsy()
-          done()
-        }).catch(err => done(err))
-      })
+      const foundUser = await User.findOne({ email })
+      expect(foundUser).toBeFalsy()
   })
 })
 
 // GET /users
-describe('GET /users', () => {
+describe('GET /users', async () => {
 
-  it('should respond 200, if user is logged in, and is Admin', (done) => {
+  it('should respond 200, if user is logged in, and is Admin', async () => {
     const cookie = `token=${tokens[1]}`
 
-    request(app)
+    await request(app)
       .get('/users')
       .set('Cookie', cookie)
       .expect(200)
-      .end(done)
   })
 
-  it('should respond 401, if user is NOT logged in', (done) => {
-    request(app)
+  it('should respond 401, if user is NOT logged in', async () => {
+    await request(app)
       .get('/users')
       .expect(401)
-      .end(done)
   })
 
-  it('should respond 401, if user is logged in, but NOT Admin', (done) => {
+  it('should respond 401, if user is logged in, but NOT Admin', async () => {
     const cookie = `token=${tokens[0]}`
 
-    request(app)
+    await request(app)
       .get('/users')
       .set('Cookie', cookie)
       .expect(401)
-      .end(done)
   })
 })
 
 // GET /users/:id/view
-describe('GET /users/:id/view', () => {
+describe('GET /users/:id/view', async () => {
 
-  it('should respond 200, if user is logged in', (done) => {
+  it('should respond 200, if user is logged in', async () => {
     const cookie = `token=${tokens[0]}`
     const { _id } = users[0]._id
 
-    request(app)
+    await request(app)
       .get(`/users/${ _id }/view`)
       .set('Cookie', cookie)
       .expect(200)
-      .end(done)
   })
 
-  it('should respond 401, if user is NOT logged in', (done) => {
+  it('should respond 401, if user is NOT logged in', async () => {
     const { _id } = users[0]._id
 
-    request(app)
+    await request(app)
       .get(`/users/${ _id }/view`)
       .expect(401)
-      .end(done)
   })
 })
 
 // GET /login
-describe('GET /login', () => {
+describe('GET /login', async () => {
 
-  it('should respond 200', (done) => {
-    request(app)
+  it('should respond 200', async () => {
+    await request(app)
       .get('/login')
       .expect(200)
-      .end(done)
   })
 })
 
-describe('POST /login', () => {
+describe('POST /login', async () => {
   
-  it('should return 302, login user, and create a token', (done) => {
+  it('should return 302, login user, and create a token', async () => {
     const { email, password } = users[0]
   
-    request(app)
+    await request(app)
       .post('/login')
       .send(`email=${email}`)
       .send(`password=${password}`)
@@ -272,13 +236,12 @@ describe('POST /login', () => {
         expect(res.header.location).toEqual('/profile')
         expect(res.header['set-cookie']).toBeTruthy()
       })
-      .end(done)
   })
 
-  it('should return 401, and NOT login user if email is not in the database', (done) => {
+  it('should return 401, and NOT login user if email is not in the database', async () => {
     const { email, password } = users[2]
     
-    request(app)
+    await request(app)
       .post('/login')
       .send(`email=${email}`)
       .send(`password=${password}`)
@@ -286,14 +249,13 @@ describe('POST /login', () => {
       .expect((res) => {
         expect(res.header['set-cookie']).toBeFalsy()
       })
-      .end(done)
   })
 
-  it('should return 401, NOT login user if password is incorrect', (done) => {
+  it('should return 401, NOT login user if password is incorrect', async () => {
     const { email } = users[0]
     const { password } = users[2]
     
-    request(app)
+    await request(app)
       .post('/login')
       .send(`email=${email}`)
       .send(`password=${password}`)
@@ -301,17 +263,16 @@ describe('POST /login', () => {
       .expect((res) => {
         expect(res.header['set-cookie']).toBeFalsy()
       })
-      .end(done)
   })
 })
 
 // GET /logout
-describe('GET /logout', () => {
+describe('GET /logout', async () => {
   
-  it('should return 302, logout user and delete auth token', (done) => {
+  it('should return 302, logout user and delete auth token', async () => {
     const cookie = `token=${tokens[0]}`
     
-    request(app)
+    await request(app)
       .get('/logout')
       .set('Cookie', cookie)
       .expect(302)
@@ -319,53 +280,49 @@ describe('GET /logout', () => {
         expect(res.header.location).toEqual('/blogs')
         expect(res.header['set-cookie']).toEqual(["token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT"])
       })
-      .end(done)
   })
 })
 
 // GET /users/:id/edit
-describe('GET /users/edit', () => {
+describe('GET /users/edit', async () => {
 
-  it('should respond 200, and GET /blogs/edit, if user is logged in.', (done) => {
+  it('should respond 200, and GET /blogs/edit, if user is logged in.', async () => {
     const cookie = `token=${tokens[0]}`
     const { _id } = users[0]._id
 
-    request(app)
+    await request(app)
       .get(`/users/edit`)
       .set('Cookie', cookie)
       .expect(200)
-      .end(done)
   })
 
-  it('should respond 401, if user is NOT logged in.', (done) => {
+  it('should respond 401, if user is NOT logged in.', async () => {
     const { _id } = users[0]._id
 
-    request(app)
+    await request(app)
       .get(`/users/edit`)
       .expect(401)
-      .end(done)
   })
 
-  it('should respond 401, if user has token, but user NOT in the database.', (done) => {
+  it('should respond 401, if user has token, but user NOT in the database.', async () => {
     const cookie = `token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1YzMyOTEwNTYyYzM0ZDZjZGYwMWZkODciLCJhZG1pbiI6ZmFsc2UsImlhdCI6MTU0NjgxNzc5NywiZXhwIjoxNTQ2OTA0MTk3fQ.FvyXCMXxjLiQlFXQe-Y7uPVn0W41F8uyTQGnJAxe1eI`
 
-    request(app)
+    await request(app)
       .get(`/users/edit`)
       .set('Cookie', cookie)
       .expect(401)
-      .end(done)
   })
 })
 
 // PATCH /users
-describe('PATCH /users/:id', () => {
+describe('PATCH /users/:id', async () => {
   
-  it('should return 302, and update the specified user, if logged in and user is creator', (done) => {
+  it('should return 302, and update the specified user, if logged in and user is creator', async () => {
     const { _id } = users[0]
     const { email, password } = users[2]
     const cookie = `token=${tokens[0]}`
 
-    request(app)
+    await request(app)
       .patch(`/users/${ _id }`)
       .set('Cookie', cookie)
       .send(`email=${email}`)
@@ -374,136 +331,106 @@ describe('PATCH /users/:id', () => {
       .expect((res) => {
         expect(res.header.location).toEqual('/profile')
       })
-      .end((err) => {
-        if (err) return done(err)
 
-        User.findById(_id).then((user) => {
-          expect(user).toBeTruthy()
-          expect(user._id).toEqual(_id)
-          expect(user.email).toEqual(email.toLowerCase())
-          expect(user.password).not.toEqual(password)
-          done()
-        }).catch(err => done(err))
-      })
+      const foundUser = await User.findById(_id)
+      expect(foundUser).toBeTruthy()
+      expect(foundUser._id).toEqual(_id)
+      expect(foundUser.email).toEqual(email.toLowerCase())
+      expect(foundUser.password).not.toEqual(password)
   })
 
-  it('should return 401, and NOT update the specified user, if user is logged in, but NOT creator', (done) => {
+  it('should return 401, and NOT update the specified user, if user is logged in, but NOT creator', async () => {
     const { _id } = users[1]
     const { email, password } = users[2]
     const cookie = `token=${tokens[0]}`
 
-    request(app)
+    await request(app)
       .patch(`/users/${ _id }`)
       .set('Cookie', cookie)
       .send(`email=${email}`)
       .send(`password=${password}`)
       .expect(401)
-      .end((err) => {
-        if (err) return done(err)
 
-        User.findById(_id).then((user) => {
-          expect(user).toBeTruthy()
-          expect(user._id).toEqual(_id)
-          expect(user.email).not.toEqual(email.toLowerCase())
-          done()
-        }).catch(err => done(err))
-      })
+      const foundUser = await User.findById(_id)
+      expect(foundUser).toBeTruthy()
+      expect(foundUser._id).toEqual(_id)
+      expect(foundUser.email).not.toEqual(email.toLowerCase())
   })
 
-  it('should return 404, if specified user is NOT found', (done) => {
+  it('should return 404, if specified user is NOT found', async () => {
     const { _id } = new ObjectId()
     const { email, password } = users[2]
     const cookie = `token=${tokens[0]}`
 
-    request(app)
+    await request(app)
       .patch(`/users/${ _id }`)
       .set('Cookie', cookie)
       .send(`email=${email}`)
       .send(`password=${password}`)
       .expect(404)
-      .end((err) => {
-        if (err) return done(err)
 
-        User.findById(_id).then((user) => {
-          expect(user).toBeFalsy()
-          done()
-        }).catch(err => done(err))
-      })
+      const foundUser = await User.findById(_id)
+      expect(foundUser).toBeFalsy()
   })
 
-  it('should return 400, and NOT update if user already exists', (done) => {
+  it('should return 400, and NOT update if user already exists', async () => {
     const { _id } = users[0]
     const { email, password } = users[1]
     const cookie = `token=${tokens[0]}`
 
-    request(app)
+    await request(app)
       .patch(`/users/${ _id }`)
       .set('Cookie', cookie)
       .send(`email=${email}`)
       .send(`password=${password}`)
       .expect(400)
-      .end((err) => {
-        if (err) return done(err)
 
-        User.findById(_id).then((user) => {
-          expect(user._id).toEqual(_id)
-          expect(user.email).not.toEqual(email)
-          done()
-        }).catch(err => done(err))
-      })
+      const foundUser = await User.findById(_id)
+      expect(foundUser._id).toEqual(_id)
+      expect(foundUser.email).not.toEqual(email)
   })
 
-  it('should return 400, and NOT update a user with an invalid email', (done) => {
+  it('should return 400, and NOT update a user with an invalid email', async () => {
     const { _id } = users[0]
     const { email, password } = users[3]
     const cookie = `token=${tokens[0]}`
 
-    request(app)
+    await request(app)
       .patch(`/users/${ _id }`)
       .set('Cookie', cookie)
       .send(`email=${email}`)
       .send(`password=${password}`)
       .expect(400)
-      .end((err) => {
-        if (err) return done(err)
 
-        User.findById(_id).then((user) => {
-          expect(user._id).toEqual(_id)
-          expect(user.email).not.toEqual(email)
-          done()
-        }).catch(err => done(err))
-      })
+      const foundUser = await User.findById(_id)
+      expect(foundUser._id).toEqual(_id)
+      expect(foundUser.email).not.toEqual(email)
   })
 
-  it('should return 402, and NOT update a user with an invalid password', (done) => {
+  it('should return 402, and NOT update a user with an invalid password', async () => {
     const { _id } = users[0]
     const { email, password } = users[4]
     const cookie = `token=${tokens[0]}`
 
-    request(app)
+    await request(app)
       .patch(`/users/${ _id }`)
       .set('Cookie', cookie)
       .send(`email=${email}`)
       .send(`password=${password}`)
       .expect(400)
-      .end((err) => {
-        if (err) return done(err)
 
-        User.findById(_id).then((user) => {
-          expect(user._id).toEqual(_id)
-          expect(user.email).not.toEqual(email)
-          done()
-        }).catch(err => done(err))
-      })
+      const foundUser = await User.findById(_id)
+      expect(foundUser._id).toEqual(_id)
+      expect(foundUser.email).not.toEqual(email)
   })
 
-  it('should return 302, and NOT allow user to change Admin field', (done) => {
+  it('should return 302, and NOT allow user to change Admin field', async () => {
     const { _id } = users[0]
     const cookie = `token=${tokens[0]}`
     const { email, password } = users[0]
     const { admin } = { 'admin' : true }
 
-    request(app)
+    await request(app)
       .patch(`/users/${ _id }`)
       .set('Cookie', cookie)
       .send(`email=${email}`)
@@ -513,30 +440,24 @@ describe('PATCH /users/:id', () => {
       .expect((res) => {
         expect(res.header.location).toEqual('/profile')
       })
-      .end((err) => {
-        if (err) return done(err)
 
-        User.findById(_id).then((user) => {
-
-          expect(user).toBeTruthy()
-          expect(user._id).toEqual(_id)
-          expect(user.email).toEqual(email.toLowerCase())
-          expect(user.password).not.toEqual(password)
-          expect(user.admin).not.toEqual(admin)
-          done()
-        }).catch(err => done(err))
-      })
+      const foundUser = await User.findById(_id)
+      expect(foundUser).toBeTruthy()
+      expect(foundUser._id).toEqual(_id)
+      expect(foundUser.email).toEqual(email.toLowerCase())
+      expect(foundUser.password).not.toEqual(password)
+      expect(foundUser.admin).not.toEqual(admin)
   })
 })
 
 
 // DELETE /users/:id
-describe('DELETE /users/delete', () => {
+describe('DELETE /users/delete', async () => {
   
-  it('should return 302, delete the specified user, and redirect to /blogs', (done) => {
+  it('should return 302, delete the specified user, and redirect to /blogs', async () => {
     const cookie = `token=${tokens[0]}`
 
-    request(app)
+    await request(app)
       .delete(`/users/delete`)
       .set('Cookie', cookie)
       .expect(302)
@@ -544,80 +465,66 @@ describe('DELETE /users/delete', () => {
         expect(res.header.location).toEqual('/blogs')
         expect(res.header['set-cookie']).toEqual(["token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT"])
       })
-      .end((err) => {
-        if (err) return done(err)
 
-        User.find().then((users) => {
-          expect(users.length).toBe(1)
-          done()
-        }).catch(err => done(err))
-      })
+      const foundUsers = await User.find()
+      expect(foundUsers.length).toBe(1)
   })
 
-  it('should return 401, if user has a token, but is NOT found in the database', (done) => {
+  it('should return 401, if user has a token, but is NOT found in the database', async () => {
     const cookie = `token=${tokens[2]}`
 
-    request(app)
+    await request(app)
       .delete(`/users/delete`)
       .set('Cookie', cookie)
       .expect(401)
-      .end((err) => {
-        if (err) return done(err)
 
-        User.find().then((users) => {
-          expect(users.length).toBe(2)
-          done()
-        }).catch(err => done(err))
-      })
+    const foundUser = await User.find()
+    expect(foundUser.length).toBe(2)
   })
 })
 
 // GET /users/search
-describe('GET /users/search', () => {
+describe('GET /users/search', async () => {
 
-  it('should respond 200, if user is logged in, and is admin', (done) => {
+  it('should respond 200, if user is logged in, and is admin', async () => {
     const cookie = `token=${tokens[1]}`
     const term = users[0].email
 
-    request(app)
+    await request(app)
       .get('/users/search')
       .set('Cookie', cookie)
       .expect(200)
       .query({ term: term })
-      .end(done)
   })
 
-  it('should respond 401, if user is logged in, and is NOT admin', (done) => {
+  it('should respond 401, if user is logged in, and is NOT admin', async () => {
     const cookie = `token=${tokens[0]}`
     const term = users[0].email
 
-    request(app)
+    await request(app)
       .get('/users/search')
       .set('Cookie', cookie)
       .expect(401)
       .query({ term: term })
-      .end(done)
   })
   
-  it('should respond 401, if user is NOT logged in', (done) => {
+  it('should respond 401, if user is NOT logged in', async () => {
     const term = users[0].email
 
-    request(app)
+    await request(app)
       .get('/users/search')
       .expect(401)
       .query({ term: term })
-      .end(done)
   })
 
-  it(`should respond 404, search term isn't found`, (done) => {
+  it(`should respond 404, search term isn't found`, async () => {
     const cookie = `token=${tokens[1]}`
     const term = 'somethingthatsprobablynotinthedatabase'
 
-    request(app)
+    await request(app)
       .get('/users/search')
       .set('Cookie', cookie)
       .expect(404)
       .query({ term: term })
-      .end(done)
   })
 })
