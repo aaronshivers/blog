@@ -19,33 +19,31 @@ beforeEach(populateBlogs)
 // GET /blogs/new
 describe('GET /blogs/new', () => {
 
-  it('should respond 200, and GET /blogs, if user is logged in.', (done) => {
+  it('should respond 200, and GET /blogs, if user is logged in.', async () => {
     const cookie = `token=${tokens[0]}`
 
-    request(app)
+    await request(app)
       .get('/blogs/new')
       .set('Cookie', cookie)
       .expect(200)
-      .end(done)
   })
 
-  it('should respond 401, if user is NOT logged in.', (done) => {
+  it('should respond 401, if user is NOT logged in.', async () => {
 
-    request(app)
+    await request(app)
       .get('/blogs/new')
       .expect(401)
-      .end(done)
   })
 })
 
 // POST /blogs
 describe('POST /blogs', () => {
 
-  it('should respond 302, redirect to /blogs, and create a new blog if user is logged in', (done) => {
+  it('should respond 302, redirect to /blogs, and create a new blog if user is logged in', async () => {
     const cookie = `token=${tokens[0]}`
     const { title, body, image } = blogs[2]
     
-    request(app)
+    await request(app)
       .post('/blogs')
       .set('Cookie', cookie)
       .send(`title=${ title }`)
@@ -55,199 +53,165 @@ describe('POST /blogs', () => {
       .expect((res) => {
         expect(res.header.location).toEqual('/blogs')
       })
-      .end((err, res) => {
-        if (err) return done(err)
 
-        Blog.findOne({ title }).then((blog) => {
-          expect(blog.title).toEqual(title)
-          expect(blog.body).toEqual(body)
-          expect(blog.image).toEqual(image)
-          done()
-        }).catch((err) => done(err.message))
-      })
+    const foundBlog = await Blog.findOne({ title })
+    expect(foundBlog.title).toEqual(title)
+    expect(foundBlog.body).toEqual(body)
+    expect(foundBlog.image).toEqual(image)
   })
 
-  it('should respond 400, and NOT create a duplicate blog', (done) => {
+  it('should respond 400, and NOT create a duplicate blog', async () => {
     const cookie = `token=${tokens[0]}`
     const { title, body, image } = blogs[0]
     
-    request(app)
+    await request(app)
       .post(`/blogs/`)
       .set('Cookie', cookie)
       .send(`title=${ title }`)
       .send(`body=${ body }`)
       .send(`image=${ image }`)
       .expect(400)
-      .end((err, res) => {
-        if (err) return done(err.message)
 
-        Blog.find().then((blogs) => {
-          expect(blogs.length).toBe(2)
-          done()
-        }).catch((err) => done(err.message))
-      })
+    const foundBlogs = await Blog.find()
+    expect(foundBlogs.length).toBe(2)
   })
 
-  it('should respond 400, and NOT create a new blog, if data is invalid', (done) => {
+  it('should respond 400, and NOT create a new blog, if data is invalid', async () => {
     const cookie = `token=${tokens[0]}`
 
-    request(app)
+    await request(app)
       .post('/blogs')
       .set('Cookie', cookie)
       .send()
       .expect(400)
-      .end((err, res) => {
-        if (err) {
-          return done(err.message)
-        }
         
-        Blog.find().then((blogs) => {
-          expect(blogs.length).toBe(2)
-          done()
-        }).catch((err) => done(err.message))
-      })
+    const foundBlogs = await Blog.find()
+    expect(foundBlogs.length).toBe(2)
   })
 
-  it('should respond 401, and NOT create a new blog, if user is NOT logged in', (done) => {
+  it('should respond 401, and NOT create a new blog, if user is NOT logged in', async () => {
     const { title, body, image } = blogs[2]
 
-    request(app)
+    await request(app)
       .post('/blogs')
       .send(`title=${ title }`)
       .send(`body=${ body }`)
       .send(`image=${ image }`)
       .expect(401)
-      .end((err, res) => {
-        if (err) {
-          return done(err.message)
-        }
         
-        Blog.find().then((blogs) => {
-          expect(blogs.length).toBe(2)
-          done()
-        }).catch((err) => done(err.message))
-      })
+    const foundBlogs = await Blog.find()
+    expect(foundBlogs.length).toBe(2)
   })
 })
 
 // GET /blogs
 describe('GET /blogs', () => {
-  it('should respond 200, and GET /blogs', (done) => {
-    request(app)
+  it('should respond 200, and GET /blogs', async () => {
+    await request(app)
       .get('/blogs')
       .expect(200)
-      .end(done)
   })
 })
 
 // GET /blogs/list
 describe('GET /blogs/list', () => {
 
-  it('should respond 200, and GET /blogs/list, if user logged in and is creator', (done) => {
+  it('should respond 200, and GET /blogs/list, if user logged in and is creator', async () => {
     const cookie = `token=${tokens[0]}`
     const { _id } = users[0]
 
-    request(app)
+    await request(app)
       .get(`/blogs/list`)
       .set('Cookie', cookie)
       .expect(200)
-      .end(done)
   })
 
-  it('should respond 401, if user is NOT logged in', (done) => {
+  it('should respond 401, if user is NOT logged in', async () => {
     const { _id } = users[0]
 
-    request(app)
+    await request(app)
       .get(`/blogs/list`)
       .expect(401)
-      .end(done)
   })
 
-  it('should respond 401, if user is logged in, but NOT creator', (done) => {
+  it('should respond 401, if user is logged in, but NOT creator', async () => {
 
     const cookie = `token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1YzMxNWJhYWViNjc5ZjdhMWVlNzAzYjEiLCJhZG1pbiI6ZmFsc2UsImlhdCI6MTU0NjczODYwMiwiZXhwIjoxNTQ2ODI1MDAyfQ.ZSDfhUNvJBs2TyknQXbStu77-qpVJFDakm9KBFV7IWA`
     const { _id } = users[0]
 
-    request(app)
+    await request(app)
       .get(`/blogs/list`)
       .set('Cookie', cookie)
       .expect(401)
-      .end(done)
   })
 })
 
 // GET /blogs/:id/view
 describe('GET /blogs/:id/view', () => {
   
-  it('should respond with 200, if specified blog exists', (done) => {
+  it('should respond with 200, if specified blog exists', async () => {
     const { _id } = blogs[0]
-    request(app)
+    await request(app)
       .get(`/blogs/${ _id }/view`)
       .expect(200)
-      .end(done)
   })
 
-  it('should respond with 404, if specified blog does NOT exist', (done) => {
+  it('should respond with 404, if specified blog does NOT exist', async () => {
     const { _id } = new ObjectId()
-    request(app)
+    await request(app)
       .get(`/blogs/${ _id }/view`)
       .expect(404)
-      .end(done)
   })
 
-  it('should respond with 400, if ObjectId is invalid', (done) => {
+  it('should respond with 400, if ObjectId is invalid', async () => {
     const { _id } = `invalidObjectId`
-    request(app)
+    await request(app)
       .get(`/blogs/${ _id }/view`)
       .expect(400)
-      .end(done)
   })
 })
 
 // GET /blogs/:id/edit
 describe('GET /blogs/:id/edit', () => {
 
-  it('should respond 200, and GET /blogs/:id/edit, if user is logged in, and is the creator.', (done) => {
+  it('should respond 200, and GET /blogs/:id/edit, if user is logged in, and is the creator.', async () => {
     const cookie = `token=${tokens[0]}`
     const { _id } = blogs[0]._id
 
-    request(app)
+    await request(app)
       .get(`/blogs/${ _id }/edit`)
       .set('Cookie', cookie)
       .expect(200)
-      .end(done)
   })
 
-  it('should respond 401, if user is NOT logged in.', (done) => {
+  it('should respond 401, if user is NOT logged in.', async () => {
     const { _id } = blogs[0]._id
 
-    request(app)
+    await request(app)
       .get(`/blogs/${ _id }/edit`)
       .expect(401)
-      .end(done)
   })
 
-  it('should respond 401, if user is logged in, but NOT the creator.', (done) => {
+  it('should respond 401, if user is logged in, but NOT the creator.', async () => {
     const cookie = `token=${tokens[1]}`
     const { _id } = blogs[0]._id
 
-    request(app)
+    await request(app)
       .get(`/blogs/${ _id }/edit`)
       .set('Cookie', cookie)
       .expect(401)
-      .end(done)
   })
 })
 
 // PATCH /blogs/:id
 describe('PATCH /blogs/:id', () => {
 
-  it('should respond 302, redirect to /blogs, and update the specified blog, if user is logged in, and is creator', (done) => {
+  it('should respond 302, redirect to /blogs, and update the specified blog, if user is logged in, and is creator', async () => {
     const { _id } = blogs[0]
     const cookie = `token=${tokens[0]}`
     const { title, body, image } = blogs[3]
     
-    request(app)
+    await request(app)
       .patch(`/blogs/${ _id }`)
       .set('Cookie', cookie)
       .send(`title=${ title }`)
@@ -257,229 +221,174 @@ describe('PATCH /blogs/:id', () => {
       .expect((res) => {
         expect(res.header.location).toEqual('/blogs')
       })
-      .end((err, res) => {
-        if (err) return done(err.message)
 
-        Blog.findById({ _id }).then((blog) => {
-          expect(blog).toBeTruthy()
-          expect(blog.title).toEqual(title)
-          expect(blog.body).toEqual(body)
-          expect(blog.image).toEqual(image)
-          done()
-        }).catch((err) => done(err.message))
-      })
+    const foundBlog = await Blog.findById({ _id })
+    expect(foundBlog).toBeTruthy()
+    expect(foundBlog.title).toEqual(title)
+    expect(foundBlog.body).toEqual(body)
+    expect(foundBlog.image).toEqual(image)
   })
 
-  it('should respond 404, if specified blog is not found', (done) => {
+  it('should respond 404, if specified blog is not found', async () => {
     const { _id } = new ObjectId()
     const cookie = `token=${tokens[0]}`
     const { title, body, image } = blogs[3]
 
-    request(app)
+    await request(app)
       .patch(`/blogs/${ _id }`)
       .set('Cookie', cookie)
       .send(`title=${ title }`)
       .send(`body=${ body }`)
       .send(`image=${ image }`)
       .expect(404)
-      .end((err, res) => {
-        if (err) return done(err.message)
 
-        Blog.findOne({ title }).then((blog) => {
-          expect(blog).toBeFalsy()
-          done()
-        }).catch((err) => done(err.message))
-      })
+    const foundBlog = await Blog.findOne({ title })
+    expect(foundBlog).toBeFalsy()
   })
 
-  it('should respond 400, and NOT update a duplicate blog', (done) => {
+  it('should respond 400, and NOT update a duplicate blog', async () => {
     const { _id } = blogs[0]
     const cookie = `token=${tokens[0]}`
     const { title, body, image } = blogs[1]
     
-    request(app)
+    await request(app)
       .patch(`/blogs/${ _id }`)
       .set('Cookie', cookie)
       .expect(400)
       .send(`title=${ title }`)
       .send(`body=${ body }`)
       .send(`image=${ image }`)
-      .end((err, res) => {
-        if (err) return done(err.message)
 
-        Blog.find({ title }).then((blogs) => {
-          expect(blogs.length).toBe(1)
-          done()
-        }).catch((err) => done(err.message))
-      })
+    const foundBlogs = await Blog.find({ title })
+    expect(foundBlogs.length).toBe(1)
   })
 
-  it('should respond 400, and NOT update specified blog, if data is invalid', (done) => {
+  it('should respond 400, and NOT update specified blog, if data is invalid', async () => {
     const { _id } = blogs[0]
     const cookie = `token=${tokens[0]}`
 
-    request(app)
+    await request(app)
       .patch(`/blogs/${ _id }`)
       .set('Cookie', cookie)
       .send()
       .expect(400)
-      .end((err, res) => {
-        if (err) {
-          return done(err.message)
-        }
-        
-        Blog.find().then((blogs) => {
-          expect(blogs.length).toBe(2)
-          done()
-        }).catch((err) => done(err.message))
-      })
+      
+      const foundBlogs = await Blog.find()
+      expect(foundBlogs.length).toBe(2)
   })
 
-  it('should respond 401, and NOT update specified blog, if user is NOT logged in', (done) => {
+  it('should respond 401, and NOT update specified blog, if user is NOT logged in', async () => {
     const { _id } = blogs[0]
     const { title, body, image } = blogs[3]
 
-    request(app)
+    await request(app)
       .patch(`/blogs/${ _id }`)
       .expect(401)
       .send(`title=${ title }`)
       .send(`body=${ body }`)
       .send(`image=${ image }`)
-      .end((err, res) => {
-        if (err) return done(err.message)
-        
-        Blog.find().then((blogs) => {
-          expect(blogs.length).toBe(2)
-          done()
-        }).catch((err) => done(err.message))
-      })
+      
+    const foundBlogs = await Blog.find()
+    expect(foundBlogs.length).toBe(2)
   })
 
-  it('should respond 401, and NOT update the specified blog, if user is logged in, and is NOT creator', (done) => {
+  it('should respond 401, and NOT update the specified blog, if user is logged in, and is NOT creator', async () => {
     const { _id } = blogs[0]
     const cookie = `token=${tokens[2]}`
     const { title, body, image, creator } = blogs[2]
 
-    request(app)
+    await request(app)
       .patch(`/blogs/${ _id }`)
       .set('Cookie', cookie)
       .expect(401)
       .send(`title=${ title }`)
       .send(`body=${ body }`)
       .send(`image=${ image }`)
-      .end((err, res) => {
-        if (err) return done(err.message)
 
-        Blog.findById({ _id }).then((blog) => {
-
-          expect(blog).toBeTruthy()
-          expect(blog.title).not.toEqual(title)
-          expect(blog.body).not.toEqual(body)
-          expect(blog.image).not.toEqual(image)
-          expect(blog.creator).not.toEqual(creator)
-          done()
-        }).catch((err) => done(err.message))
-      })
+    const foundBlog = await Blog.findById({ _id })
+    expect(foundBlog).toBeTruthy()
+    expect(foundBlog.title).not.toEqual(title)
+    expect(foundBlog.body).not.toEqual(body)
+    expect(foundBlog.image).not.toEqual(image)
+    expect(foundBlog.creator).not.toEqual(creator)
   })
 })
 
 // DELETE /items/:id
 describe('DELETE /blogs/:id', () => {
 
-  it('should respond 302, and delete a blog, if user is logged in, and is creator', (done) => {
+  it('should respond 302, and delete a blog, if user is logged in, and is creator', async () => {
     const { _id } = blogs[0]
     const cookie = `token=${tokens[0]}`
 
-    request(app)
+    await request(app)
       .delete(`/blogs/${ _id }`)
       .set('Cookie', cookie)
       .expect(302)
       .expect((res) => {
         expect(res.header.location).toEqual('/blogs')
       })
-      .end((err, res) => {
-        if (err) return done(err.message)
 
-        Blog.findById({ _id }).then((blog) => {
-          expect(blog).toBeFalsy()
-          done()
-        }).catch((err) => done(err.message))
-      })
+    const foundBlog = await Blog.findById({ _id })
+    expect(foundBlog).toBeFalsy()
   })
 
-  it('should return 404 if specified item is not found', (done) => {
+  it('should return 404 if specified item is not found', async () => {
     const id =  new ObjectId()
     const cookie = `token=${tokens[0]}`
 
-    request(app)
+    await request(app)
       .delete(`/blogs/${id}`)
       .set('Cookie', cookie)
       .expect(404)
-      .end((err, res) => {
-        if (err) return done(err.message)
 
-        Blog.find().then((blogs) => {
-          expect(blogs.length).toBe(2)
-          done()
-        }).catch((err) => done(err.message))
-      })
+    const foundBlogs = await Blog.find()
+    expect(foundBlogs.length).toBe(2)
   })
 
-  it('should return 401, if user is NOT logged in', (done) => {
+  it('should return 401, if user is NOT logged in', async () => {
     const { _id } = blogs[0]
 
-    request(app)
+    await request(app)
       .delete(`/blogs/${ _id }`)
       .expect(401)
-      .end((err, res) => {
-        if (err) return done(err.message)
 
-        Blog.findById({ _id }).then((blog) => {
-          expect(blog).toBeTruthy()
-          done()
-        }).catch((err) => done(err.message))
-      })
+    const foundBlog = await Blog.findById({ _id })
+    expect(foundBlog).toBeTruthy()
   })
 
-  it('should return 401, if user is logged in, but NOT creator', (done) => {
+  it('should return 401, if user is logged in, but NOT creator', async () => {
     const { _id } = blogs[0]
     const cookie = `token=${tokens[2]}`
 
-    request(app)
+    await request(app)
       .delete(`/blogs/${ _id }`)
       .set('Cookie', cookie)
       .expect(401)
-      .end((err, res) => {
-        if (err) return done(err.message)
 
-        Blog.findById({ _id }).then((blog) => {
-          expect(blog).toBeTruthy()
-          done()
-        }).catch((err) => done(err.message))
-      })
+    const foundBlog = await Blog.findById({ _id })
+    expect(foundBlog).toBeTruthy()
   })
 })
 
 // GET /blogs/search
 describe('GET /blogs/search', () => {
 
-  it('should respond 200', (done) => {
+  it('should respond 200', async () => {
     const term = blogs[0].title
 
-    request(app)
+    await request(app)
       .get('/blogs/search')
       .expect(200)
       .query({ term: term })
-      .end(done)
   })
 
-  it(`should respond 404, search term isn't found`, (done) => {
+  it(`should respond 404, search term isn't found`, async () => {
     const term = 'somethingthatsprobablynotinthedatabase'
 
-    request(app)
+    await request(app)
       .get('/blogs/search')
       .expect(404)
       .query({ term: term })
-      .end(done)
   })
 })
