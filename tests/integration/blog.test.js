@@ -2,9 +2,9 @@ const expect = require('expect')
 const request = require('supertest')
 const { ObjectId } = require('mongodb')
 
-const Blog = require(`../models/blog-model`)
-const User = require(`../models/user-model`)
-const app = require('../app')
+const Blog = require(`../../models/blog-model`)
+const User = require(`../../models/user-model`)
+const app = require('../../app')
 const {
   populateUsers,
   populateBlogs,
