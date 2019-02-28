@@ -12,13 +12,13 @@ router.all('*', (req, res, next) => {
   next()
 })
 
-// GET /blogs/new
-router.get('/blogs/new', authenticateUser, (req, res) => {
+// GET /new
+router.get('/new', authenticateUser, (req, res) => {
   res.render('new-blog')
 })
 
-// POST /blogs
-router.post('/blogs', authenticateUser, async (req, res) => {
+// POST /
+router.post('/', authenticateUser, async (req, res) => {
   const { title, body, image } = req.body
   const token = req.cookies.token
 
@@ -36,8 +36,8 @@ router.post('/blogs', authenticateUser, async (req, res) => {
   }
 })
 
-// GET /blogs
-router.get('/blogs', async (req, res, next) => {
+// GET /
+router.get('/', async (req, res, next) => {
 
   try {
     const [ results, itemCount ] = await Promise.all([
@@ -58,8 +58,8 @@ router.get('/blogs', async (req, res, next) => {
   }
 })
 
-// GET /blogs/:id/view
-router.get('/blogs/:id/view', async (req, res) => {
+// GET /:id/view
+router.get('/:id/view', async (req, res) => {
   const { id } = req.params
 
   try {
@@ -78,8 +78,8 @@ router.get('/blogs/:id/view', async (req, res) => {
   }
 })
 
-// GET /blogs/search
-router.get('/blogs/search', async (req, res, next) => {
+// GET /search
+router.get('/search', async (req, res, next) => {
   const { term } = req.query
 
   try {
@@ -106,8 +106,8 @@ router.get('/blogs/search', async (req, res, next) => {
   }
 })
 
-// GET /blogs/list
-router.get('/blogs/list', authenticateUser, async (req, res, next) => {
+// GET /list
+router.get('/list', authenticateUser, async (req, res, next) => {
   const { token } = req.cookies
 
   try {
@@ -120,8 +120,8 @@ router.get('/blogs/list', authenticateUser, async (req, res, next) => {
   }
 })
 
-// GET /blogs/:id/edit
-router.get('/blogs/:id/edit', authenticateUser, async (req, res) => {
+// GET /:id/edit
+router.get('/:id/edit', authenticateUser, async (req, res) => {
   const { token } = req.cookies
   const _id = req.params.id
 
@@ -140,8 +140,8 @@ router.get('/blogs/:id/edit', authenticateUser, async (req, res) => {
   }
 })
 
-// PATCH /blogs/:id
-router.patch('/blogs/:id', authenticateUser, async (req, res) => {
+// PATCH /:id
+router.patch('/:id', authenticateUser, async (req, res) => {
   const { token } = req.cookies
   const _id = req.params.id
   const { title, body, image } = req.body
@@ -170,8 +170,8 @@ router.patch('/blogs/:id', authenticateUser, async (req, res) => {
   }
 })
 
-// DELETE /blogs/:id
-router.delete('/blogs/:id', authenticateUser, async (req, res) => {
+// DELETE /:id
+router.delete('/:id', authenticateUser, async (req, res) => {
   const { token } = req.cookies
   const _id = req.params.id
 

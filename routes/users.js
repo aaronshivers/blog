@@ -19,8 +19,8 @@ router.all('*', (req, res, next) => {
   next()
 })
 
-// POST /users
-router.post('/users', async (req, res) => {
+// POST /
+router.post('/', async (req, res) => {
   const email = req.body.email
   const password = req.body.password
 
@@ -66,8 +66,8 @@ router.get('/profile', authenticateUser, async (req, res) => {
   }
 })
 
-// GET /users
-router.get('/users', authenticateAdmin, async (req, res, next) => {
+// GET /
+router.get('/', authenticateAdmin, async (req, res, next) => {
   
   try {
     const [ results, itemCount ] = await Promise.all([
@@ -98,8 +98,8 @@ router.get('/users', authenticateAdmin, async (req, res, next) => {
   }
 })
 
-// GET /users/:id/view
-router.get('/users/:id/view', authenticateUser, async (req, res) => {
+// GET /:id/view
+router.get('/:id/view', authenticateUser, async (req, res) => {
   const { id } = req.params
 
   try {
@@ -110,8 +110,8 @@ router.get('/users/:id/view', authenticateUser, async (req, res) => {
   }
 })
 
-// GET /users/search
-router.get('/users/search', authenticateAdmin, async (req, res, next) => {
+// GET /search
+router.get('/search', authenticateAdmin, async (req, res, next) => {
   const { term } = req.query
 
   try {
@@ -189,8 +189,8 @@ router.get('/logout', (req, res) => {
   res.clearCookie('token').redirect(`/blogs`)
 })
 
-// GET /users/edit
-router.get('/users/edit', authenticateUser, async (req, res) => {
+// GET /edit
+router.get('/edit', authenticateUser, async (req, res) => {
   const { token } = req.cookies
 
   try {
@@ -202,8 +202,8 @@ router.get('/users/edit', authenticateUser, async (req, res) => {
   }
 })
 
-// PATCH /users/:id
-router.patch('/users/:id', authenticateUser, async (req, res) => {
+// PATCH /:id
+router.patch('/:id', authenticateUser, async (req, res) => {
   const { token } = req.cookies
   const { id } = req.params
   const { email, password, firstName, lastName, jobTitle, avatar } = req.body
@@ -236,8 +236,8 @@ router.patch('/users/:id', authenticateUser, async (req, res) => {
   }
 })
 
-// DELETE /users/delete
-router.delete('/users/delete', authenticateUser, async (req, res) => {
+// DELETE /delete
+router.delete('/delete', authenticateUser, async (req, res) => {
   const { token } = req.cookies
 
   try {

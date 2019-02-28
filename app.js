@@ -12,8 +12,9 @@ const { populateUsers, populateBlogs } = require('./middleware/populate-database
 const app = express()
 const { PORT } = process.env
 
-const userRoutes = require('./routes/user-routes')
-const blogRoutes = require('./routes/blog-routes')
+const index = require('./routes/index')
+const users = require('./routes/users')
+const blogs = require('./routes/blogs')
 const authenticateAdmin = require('./middleware/authenticate-admin')
 
 app.set('view engine', 'ejs')
@@ -25,10 +26,9 @@ app.use(cookieParser())
 app.use(express.static('public'))
 app.use(methodOverride('_method'))
 
-app.use(userRoutes)
-app.use(blogRoutes)
-
-app.get('/', (req, res) => res.redirect('/blogs'))
+app.use('/', index)
+app.use('/users', users)
+app.use('/blogs', blogs)
 
 app.get('/admin', authenticateAdmin, (req, res) => {
   res.render('admin')

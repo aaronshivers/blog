@@ -62,23 +62,23 @@ describe('GET /admin', async () => {
 // USER TESTS =====================================================
 
 // GET /users/new
-describe('GET /signup', async () => {
+describe('GET /users/signup', async () => {
 
   it('should return 200', async () => {
     await request(app)
-      .get(`/signup`)
+      .get(`/users/signup`)
       .expect(200)
   })
 })
 
 // GET /profile
-describe('GET /profile', async () => {
+describe('GET /users/profile', async () => {
 
   it('should respond 200, if user is logged in', async () => {
     const cookie = `token=${tokens[0]}`
 
     await request(app)
-      .get('/profile')
+      .get('/users/profile')
       .set('Cookie', cookie)
       .expect(200)
   })
@@ -86,7 +86,7 @@ describe('GET /profile', async () => {
   it('should respond 401, if user is NOT logged in', async () => {
 
     await request(app)
-      .get('/profile')
+      .get('/users/profile')
       .expect(401)
   })
 
@@ -94,7 +94,7 @@ describe('GET /profile', async () => {
     const cookie = `token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI1YzMxNWJhYWViNjc5ZjdhMWVlNzAzYjEiLCJhZG1pbiI6ZmFsc2UsImlhdCI6MTU0NjczODYwMiwiZXhwIjoxNTQ2ODI1MDAyfQ.ZSDfhUNvJBs2TyknQXbStu77-qpVJFDakm9KBFV7IWA`
 
     await request(app)
-      .get('/profile')
+      .get('/users/profile')
       .set('Cookie', cookie)
       .expect(401)
   })
@@ -213,22 +213,22 @@ describe('GET /users/:id/view', async () => {
 })
 
 // GET /login
-describe('GET /login', async () => {
+describe('GET /users/login', async () => {
 
   it('should respond 200', async () => {
     await request(app)
-      .get('/login')
+      .get('/users/login')
       .expect(200)
   })
 })
 
-describe('POST /login', async () => {
+describe('POST /users/login', async () => {
   
   it('should return 302, login user, and create a token', async () => {
     const { email, password } = users[0]
   
     await request(app)
-      .post('/login')
+      .post('/users/login')
       .send(`email=${email}`)
       .send(`password=${password}`)
       .expect(302)
@@ -242,7 +242,7 @@ describe('POST /login', async () => {
     const { email, password } = users[2]
     
     await request(app)
-      .post('/login')
+      .post('/users/login')
       .send(`email=${email}`)
       .send(`password=${password}`)
       .expect(401)
@@ -256,7 +256,7 @@ describe('POST /login', async () => {
     const { password } = users[2]
     
     await request(app)
-      .post('/login')
+      .post('/users/login')
       .send(`email=${email}`)
       .send(`password=${password}`)
       .expect(401)
@@ -267,13 +267,13 @@ describe('POST /login', async () => {
 })
 
 // GET /logout
-describe('GET /logout', async () => {
+describe('GET /users/logout', async () => {
   
   it('should return 302, logout user and delete auth token', async () => {
     const cookie = `token=${tokens[0]}`
     
     await request(app)
-      .get('/logout')
+      .get('/users/logout')
       .set('Cookie', cookie)
       .expect(302)
       .expect((res) => {
