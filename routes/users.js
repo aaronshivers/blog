@@ -3,7 +3,7 @@ const router = express.Router()
 const paginate = require('express-paginate')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
-const { sendWelcomeEmail } = require('../emails/account')
+const { sendWelcomeEmail, sendCancelationEmail } = require('../emails/account')
 
 const User = require('../models/user-model')
 const { validatePassword } = require('../middleware/validate-password')
@@ -246,6 +246,7 @@ router.delete('/delete', authenticateUser, async (req, res) => {
   try {
     const id = await verifyToken(token)
     const user = await User.findByIdAndDelete(id)
+    sendCancelationEmail(user.email)
     res.clearCookie('token').redirect('/blogs')
   } catch (error) {
     return res.status(404).render('error', { statusCode: '404', errorMessage: 'Sorry, we could not find that user in our database.' })
