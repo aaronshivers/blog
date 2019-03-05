@@ -3,6 +3,7 @@ const router = express.Router()
 const paginate = require('express-paginate')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
+const { sendWelcomeEmail } = require('../emails/account')
 
 const User = require('../models/user-model')
 const { validatePassword } = require('../middleware/validate-password')
@@ -35,6 +36,8 @@ router.post('/', async (req, res) => {
     const user = await new User(newUser)
     const savedUser = await user.save()
     const token = await createToken(savedUser)
+
+    sendWelcomeEmail(email)
 
     res
       .cookie('token', token, cookieExpiration)
