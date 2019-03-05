@@ -1,10 +1,9 @@
-require('dotenv').config()
+var postmark = require("postmark")
 
-// Require:
-var postmark = require("postmark");
+const serverToken = process.env.POSTMARK_TOKEN
 
 // Send an email:
-var client = new postmark.ServerClient("98df6d2e-9122-4502-8007-2a2d1d5e358e");
+var client = new postmark.ServerClient(serverToken)
 
 const sendWelcomeEmail = email => {
   client.sendEmail({
