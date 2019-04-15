@@ -246,7 +246,6 @@ router.delete('/delete', authenticateUser, async (req, res) => {
   try {
     const id = await verifyToken(token)
     const user = await User.findByIdAndDelete(id)
-    console.log(user.email)
     sendCancelationEmail(user.email)
     res.clearCookie('token').redirect('/blogs')
   } catch (error) {

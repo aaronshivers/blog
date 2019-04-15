@@ -23,14 +23,14 @@
   },
   "homepage": "https://github.com/aaronshivers/blog#readme",
   "devDependencies": {
-    "dotenv": "^6.2.0",
-    "expect": "^23.6.0",
+    "expect": "^24.7.1",
     "mocha": "^5.2.0",
     "supertest": "^3.3.0"
   },
   "dependencies": {
     "bcrypt": "^3.0.3",
     "cookie-parser": "^1.4.3",
+    "dotenv": "^7.0.0",
     "ejs": "^2.6.1",
     "express": "^4.16.4",
     "express-paginate": "^1.0.0",
