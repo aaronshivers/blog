@@ -149,40 +149,33 @@ router.get('/login', (req, res) => res.render('login'))
 
 // POST /login
 router.post('/login', async (req, res) => {
-  const { email, password } = req.body
 
   try {
+
+    // get email and password
+    const { email, password } = req.body
+
+    // find user by email
     const user = await User.findOne({ email })
 
-    if (user) {
-      bcrypt.compare(password, user.password, async (err, hash) => {
-        if (hash) {
-          try {
-            const token = await createToken(user)
-            res
-              .cookie('token', token, cookieExpiration)
-              .status(200)
-              .redirect(`/profile`)
-          } catch (error) {
-            res.status(401).render('error', {
-              statusCode: '401',
-              errorMessage: 'Please check your login credentials, and try again.'
-            })
-          }
-        } else {
-          res.status(401).render('error', {
-            statusCode: '401',
-            errorMessage: 'Please check your login credentials, and try again.'
-          })
-        }
-      })
-    } else {
-      res.status(401).render('error', {
-        statusCode: '401',
-        errorMessage: 'Please check your login credentials, and try again.'
-      })
-    }
+    // reject if user is not found
+    if (!user) return res.status(401).render('error', { errorMessage: 'User Not Found' })
+
+    // verify user password
+    const hash = await bcrypt.compare(password, user.password)
+
+    // reject if password is incorrect
+    if (!hash) return res.status(401).render('error', { errorMessage: 'Please check your login credentials, and try again.' })
+
+    // create token
+    const token = await createToken(user)
+
+    // set cookie and redirect to /users/profile
+    res.cookie('token', token, cookieExpiration).status(200).redirect(`/users/profile`)
+
   } catch (error) {
+
+    // send error message
     res.status(401).send('Please check your login credentials, and try again.')
   }
 })

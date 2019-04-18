@@ -1,5 +1,5 @@
 const navLinks = document.getElementById('navLinks')
-console.log(document.cookie)
+
 document.cookie ? null : navLinks.innerHTML += `<li class="nav-item"><a class="nav-link" href="/users/login">Login</a></li>`
 document.cookie ? null : navLinks.innerHTML += `<li class="nav-item"><a class="nav-link" href="/users/signup">Signup</a></li>`
 // document.cookie ? navLinks.innerHTML += `<li class="nav-item"><a class="nav-link" href="/users">Users</a></li>` : null
