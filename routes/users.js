@@ -42,7 +42,7 @@ router.post('/', async (req, res) => {
     res
       .cookie('token', token, cookieExpiration)
       .status(201)
-      .redirect(`/profile`)
+      .redirect(`/users/profile`)
   } catch (error) {
     res.status(400).render('error', {
       statusCode: '400',

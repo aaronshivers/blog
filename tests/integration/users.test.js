@@ -112,7 +112,7 @@ describe('POST /users', async () => {
       .send(`password=${ password }`)
       .expect(302)
       .expect((res) => {
-        expect(res.header.location).toEqual('/profile')
+        expect(res.header.location).toEqual('/users/profile')
         expect(res.header).toHaveProperty('set-cookie')
       })
 
