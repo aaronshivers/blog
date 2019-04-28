@@ -11,7 +11,6 @@ const authenticateUser = require('../middleware/authenticate-user')
 const authenticateAdmin = require('../middleware/authenticate-admin')
 const { createToken, verifyToken } = require('../middleware/handle-tokens')
 
-const cookieExpiration = { expires: new Date(Date.now() + 86400000) }
 const saltRounds = 10
 
 // Required to prevent getting infinite results during pagination
@@ -38,9 +37,12 @@ router.post('/', async (req, res) => {
     const token = await createToken(savedUser)
 
     sendWelcomeEmail(email)
+    
+    // set cookie options
+    const cookieOptions = { expires: new Date(Date.now() + 86400000) }
 
     res
-      .cookie('token', token, cookieExpiration)
+      .cookie('token', token, cookieOptions)
       .status(201)
       .redirect(`/users/profile`)
   } catch (error) {
@@ -170,8 +172,11 @@ router.post('/login', async (req, res) => {
     // create token
     const token = await createToken(user)
 
+    // set cookie options
+    const cookieOptions = { expires: new Date(Date.now() + 86400000) }
+
     // set cookie and redirect to /users/profile
-    res.cookie('token', token, cookieExpiration).status(200).redirect(`/users/profile`)
+    res.cookie('token', token, cookieOptions).status(200).redirect(`/users/profile`)
 
   } catch (error) {
 
